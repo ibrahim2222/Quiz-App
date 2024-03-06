@@ -35,9 +35,14 @@
                         </h5>
                         <div class="form-buttons">
                             <button class=" btn btn-warning rounded-pill" id="submit" value="submit" type="submit">
-                                <i class="fas fa-pencil-alt me-1 text-black" style="color: black !important; font-size: 15px;"></i>
+                                <i class="fas fa-pencil-alt me-1 text-black" style="color: white !important; font-size: 15px;"></i>
                                 Update
                             </button>
+                            <button class="btn btn-warning addRow rounded-pill" type="button"><i class="fas fa-code-branch"></i> Add Version</button>
+                            <a class=" btn btn-primary rounded-pill" id="submit" value="submit" type="submit" asp-action="CreateQuiz" asp-controller="Assesment" asp-route-id="@Model.First().QuizID">
+                                <i class="fas fa-pencil-alt me-1 text-black" style="color: white !important; font-size: 15px;"></i>
+                                Create Question
+                            </a>
                         </div>
                     </div>
                     <div class="card-body">
@@ -115,12 +120,15 @@
                                         @foreach (var version in Model.Where(q => q.VersionID == mainQuestion.ID.ToString() && q.ID != mainQuestion.ID))
                                         {
                                             VersionCounter++;
-                                            <div class="card card-absolute border border-secondary" style="margin-top: 7% !important;">
+                                            <div class="card card-absolute border border-secondary" id="initialVersions" style="margin-top: 7% !important;">
                                                 <div class="card-header bg-warning rounded-pill" style="top: -26px;">
                                                     <h5 class="text-white">Version : @VersionCounter</h5>
                                                 </div>
                                                 <div class="card-body align-items-center justify-content-center tab">
                                                     <div class="widget-content">
+                                                        <div style='text-align: right !important;'>
+                                                            <a class='btn btn-danger text-right rounded-pill' asp-action="DeleteQuestion" asp-controller="Question" asp-route-id="@version.ID"  asp-route-quizId="@version.QuizID">Remove</a>
+                                                        </div>
                                                         <div class="row">
                                                             <div class="mb-3">
                                                                 <label for="Question"><strong>Question Version Body :</strong></label>
@@ -137,8 +145,6 @@
                                                             <div class="mb-3">
                                                                 <label for="Answer"><strong>Answer Body :</strong></label>
                                                                 @{
-                                                                    
-
                                                                     var VersionAnswersText = version.Answers.Split(',');
                                                                     var VersionAnswersAnswerImages = version.AnswersURL.Split(',');
                                                                     var VersionRadioId = "q" + RadioCounter;
@@ -150,12 +156,15 @@
                                                                             <input type="radio" name="@("Radio" + VersionRadioId)" class='me-3 correct-answer' checked="@(Ans == version.CorrectAnswer)" />
                                                                             <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt" asp-for="@Ans">
                                                                             <input class="form-control ms-3" type="file" value="@AnswerImages" asp-for="@Ans" id="AnswerImage">
+                                                                            @if (index <= 0)
+                                                                            {
+                                                                                <button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>
+                                                                            }
                                                                             <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@ImageSrc">
                                                                                 <i class="far fa-file-image" style="font-size: 18px;"></i>
                                                                             </button>
                                                                         </div>
                                                                     }
-
                                                                     RadioCounter++;
                                                                 }
                                                             </div>
@@ -163,9 +172,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-
                                         }
-
+                                        <div id="versions" style="margin-top: 7% !important;"></div>
                                     </div>
                                 </div>
                                 MainQuestionCounter++;
@@ -194,21 +202,112 @@
     $('.viewImage').on('click', function () {
         var imageSrc = $(this).data('image-src');
         var imageName = imageSrc.split('\\').pop();
-
         // Construct the URL using Razor syntax
-        var imageFinalUrl = '@Url.Content("~/uploads/")' + imageName;
-
-        console.log("Image Name: " + imageFinalUrl);
-
+        var imageFinalUrl = '@Url.Content("~/uploads/")' + imageName
         $('#selectedImagePreview').attr('src', imageFinalUrl);
-
         $('#imagePreviewModal').modal('show');
     });
 
+    var versionCounter = @VersionCounter + 1, counter = 0;
+
+    $("#versions").on("click", ".removeVersion", function () {
+        console.log("removed");
+        var versionToRemove = $(this).data("version");
+        $("#version" + versionToRemove).remove();
+        versionCounter--;
+    });
+    
+    //$(".card").on("click", ".removeVersion", function () {
+    //    $(this).closest('.card-absolute').remove();
+    //    versionCounter--;
+    //});
+
+    $(".addRow").click(function () {
+        counter++;
+        var newVersion = $(
+            "<div class='col-sm-12 col-xl-12 mt-5 mb-3 tab' id='version" + versionCounter + "'>" +
+                "<div class='card card-absolute border border-secondary mt-5'>" +
+                    "<div class='card-header bg-warning rounded-pill' style='top: -26px;'>" +
+                        "<h5 class='text-white'>Version : " + versionCounter + "</h5>" +
+                    "</div>" +
+                    "<div class='card-body align-items-center justify-content-center'>" +
+                        "<div class='widget-content'>" +
+                            "<div class='row'>" +
+                                "<div class='col-lg-12'>" +
+                                    "<div style='text-align: right !important;'>" +
+                                        "<button class='btn btn-danger text-right rounded-pill removeVersion' data-version='" + versionCounter + "'>Remove</button>" +
+                                    "</div>" +
+                                "</div>" +
+                                "<div class='mb-3'>" +
+                                    "<label for='Question'><strong>Question Body :</strong></label>" +
+                                    "<div class='input-group'>" +
+                                        "<input class='form-control Question' id='Question' type='text' name='Body' placeholder='Example : What is the Measuring unit of Voltage ?'>" +
+                                        "<input class='form-control ms-3 ImgUrl' id='BodyImage' type='file' name='ImgUrl' placeholder='Example : Volt' id='BodyImage'>" +
+                                        "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                                    "</div>" +
+                                "</div>" +
+                                "<div class='mb-3'>" +
+                                    "<label for='Answer'><strong>Answer Body :</strong></label>" +
+                                    "<div class='input-group py-3'>" +
+                                        "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer' checked />" +
+                                        "<input class='form-control answer' id='Answer' type='text' placeholder='Example : Volt'>" +
+                                        "<input class='form-control ms-2 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
+                                        "<button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>" +
+                                        "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                                    "</div>" +
+                                "</div>" +
+                                "<div class='mb-3 ans'>" +
+                                "</div>" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>" +
+                "</div>" +
+            "</div>"
+        );
+        newVersion.appendTo("#versions");
+        versionCounter++;
+    });
+
+    $("#versions").on("click", ".an", function () {
+        var newAns = $(
+            "<div class='d-flex align-items-center justify-content-evenly py-4 input-group'>" +
+                "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer'/>" +
+                "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+                "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
+                "<button class='btn btn-danger ms-4 rounded-pill removeRow' data-repeater-delete>" +
+                    "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                "</button>" +
+                "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+            "</div>"
+        );
+        $(this).closest(".card").find(".ans").append(newAns);
+    });
+
+    $("#versions").on("click", ".removeRow", function () {
+        console.log("remove row");
+        $(this).closest(".d-flex").remove();
+    });
+
+    $(".an[data-version='main']").click(function () {
+        var newAns = $(
+            "<div class='d-flex align-items-center justify-content-evenly py-4 input-group'>" +
+                "<input type='radio' name='ans0' class='me-3 correct-answer'/>" +
+                "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+                "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
+                "<button class='btn btn-danger rounded-pill ms-4 removeRow' data-repeater-delete>" +
+                    "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                "</button>" +
+                "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+            "</div>"
+        );
+        $(".ans-main").append(newAns);
+    });
+
+    $(document).on("click", ".removeRow", function () {
+        $(this).closest(".d-flex").remove();
+    });
 
     var QuizId = @Html.Raw(Json.Serialize(Model.FirstOrDefault().QuizID));
-
-
     $("#submit").click(function (e) {
         e.preventDefault();
 

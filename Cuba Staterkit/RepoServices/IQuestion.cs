@@ -8,6 +8,6 @@ namespace Cuba_Staterkit.RepoServices
         public List<Question> GetQuestionById(string id);
         public void InsertQuestion(Question question);
         public void UpdateQuestion(int id, Question question);
-        public void DeleteQuestion(int id);
+        public void DeleteQuestion(Guid id);
     }
 }

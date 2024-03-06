@@ -46,9 +46,11 @@ namespace Cuba_Staterkit.RepoServices
             throw new NotImplementedException();
         }
 
-        public void DeleteQuestion(int id)
+        public void DeleteQuestion(Guid id)
         {
-            throw new NotImplementedException();
+            Question question = Context.Questions.FirstOrDefault(q => q.ID == id);
+            Context.Questions.Remove(question);
+            Context.SaveChanges();
         }
     }
 }

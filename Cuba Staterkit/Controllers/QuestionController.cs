@@ -138,12 +138,15 @@ namespace Cuba_Staterkit.Controllers
 
         public ActionResult EditQuestions(string id)
         {
-
             var questions = Question.GetQuestionById(id).ToList();
             return View(questions);
         }
 
-
+        public ActionResult DeleteQuestion(Guid id, Guid quizId)
+        {
+            Question.DeleteQuestion(id);
+            return RedirectToAction("EditQuestions", "Question", new { id = quizId });
+        }
 
 
     }
