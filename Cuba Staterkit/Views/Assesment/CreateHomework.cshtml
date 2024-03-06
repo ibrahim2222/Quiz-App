@@ -1,0 +1,260 @@
+﻿@model HomeWork;
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<div class="page-body">
+    <div class="container-fluid">
+        <div class="page-title" style="margin-top: -29px !important;">
+            <div class="row">
+                <div class="col-6">
+                    <h3>Homework</h3>
+                </div>
+                <div class="col-6">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a asp-controller="Dashboard" asp-action="Index">
+                                <svg class="stroke-icon">
+                                    <use href="../assets/svg/icon-sprite.svg#stroke-home"></use>
+                                </svg>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">Homework Form</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <form asp-action="">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="text-center">
+                                <img width="60" class="me-2" height="60"
+                                     src="https://img.icons8.com/external-vitaliy-gorbachev-lineal-color-vitaly-gorbachev/60/external-question-online-learning-vitaliy-gorbachev-lineal-color-vitaly-gorbachev.png"
+                                     alt="external-question-online-learning-vitaliy-gorbachev-lineal-color-vitaly-gorbachev" />
+                                Question Creation
+                            </h5>
+                            <div class="form-buttons">
+                                <button class=" btn btn-primary rounded-pill" id="submit" value="submit" type="submit">
+                                    <i class="fas fa-plus"></i>
+                                    Submit
+                                </button>
+                                <button class="btn btn-warning addRow rounded-pill" type="button"><i class="fas fa-code-branch"></i> Add Version</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mt-3">
+                                <div class="col-sm-12 col-xl-12">
+                                    <div class="card card-absolute  border border-secondary">
+                                        <div class="card-header bg-primary" style="top: -46px;">
+                                            <h4 class="text-white">Main Question </h4>
+                                        </div>
+                                        <div class="card-body align-items-center justify-content-center tab">
+                                            <div class="widget-content">
+                                                <input type="hidden" name="homeworkId" value="@ViewBag.HomeworkId" /> @*id of the quiz*@
+                                                <div class="row">
+                                                    <div class="mb-3">
+                                                        <label for="Question"><strong>Question Body :</strong></label>
+                                                        <div class="input-group">
+                                                            <input class="form-control Question" id="Question" type="text" name="Body"
+                                                                   placeholder="Example : What is the Measuring unit of Voltage ?">
+                                                            <input class="form-control ms-3 ImgUrl" type="file" name="ImgUrl"
+                                                                   placeholder="Example : Volt">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="Answer"><strong>Answer Body :</strong></label>
+                                                        <div class="input-group py-3">
+                                                            <input type="radio" name="ans0" class='me-3 correct-answer' checked />
+                                                            <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt">
+                                                            <input class="form-control ms-2" id="Answer" type="file" placeholder="Example: Volt">
+                                                            <button class="btn btn-success ms-4 an" type="button" data-version="main">
+                                                                <i class="fas fa-plus-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="mb-3 ans-main">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" name="Answers" />
+                                                <input type="hidden" name="CorrectAnswer" />
+                                                <input type="hidden" name="VersionID" id="VersionID" value="1" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="versions">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Script{
+    <!-- Plugins JS start-->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="../assets/js/sidebar-menu.js"></script>
+    <script src="../assets/js/slick/slick.min.js"></script>
+    <script src="../assets/js/slick/slick.js"></script>
+    <script src="../assets/js/header-slick.js"></script>
+    <script src="../assets/js/form-wizard/form-wizard.js"></script>
+    <!-- Plugins JS Ends-->
+    <!-- Theme js-->
+    <script src="../assets/js/script.js"></script>
+
+    <script>
+        var versionCounter = 1, counter = 0; // Initialize version counter
+
+        // Event delegation for dynamically added 'Remove' buttons
+        $("#versions").on("click", ".removeVersion", function () {
+            var versionToRemove = $(this).data("version");
+            $("#version" + versionToRemove).remove();
+        });
+
+        $(".addRow").click(function () {
+            counter++;
+            var newVersion = $(
+                "<div class='col-sm-12 col-xl-12 mt-5 mb-3 tab' id='version" + versionCounter + "'>" +
+                "<div class='card card-absolute border border-secondary mt-5'>" +
+                "<div class='card-header bg-primary' style='top: -46px;'>" +
+                "<h4 class='text-white'>Version " + versionCounter + "</h4>" +
+                "<div style='text-align: right !important;'>" +
+                "</div>" +
+                "</div>" +
+                "<div class='card-body align-items-center justify-content-center'>" +
+                "<div class='widget-content'>" +
+                "<div class='row'>" +
+                "<div class='col-lg-12'>" +
+                "<div style='text-align: right !important;'>" +
+                "<button class='btn btn-danger text-right removeVersion' data-version='" + versionCounter + "'>Remove</button>" +
+                "</div>" +
+                "</div>" +
+                "<div class='mb-3'>" +
+                "<label for='Question'><strong>Question Body :</strong></label>" +
+                "<div class='input-group'>" +
+                "<input class='form-control Question' id='Question' type='text' name='Body' placeholder='Example : What is the Measuring unit of Voltage ?'>" +
+                "<input class='form-control ms-3 ImgUrl' id='Answer' type='file' name='ImgUrl' placeholder='Example : Volt'>" +
+                "</div>" +
+                "</div>" +
+                "<div class='mb-3'>" +
+                "<label for='Answer'><strong>Answer Body :</strong></label>" +
+                "<div class='input-group py-3'>" +
+                "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer' checked />" +
+                "<input class='form-control answer' id='Answer' type='text' placeholder='Example : Volt'>" +
+                "<input class='form-control ms-2' id='Answer' type='file' placeholder='Example : Volt'>" +
+                "<button class='btn btn-success ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>" +
+                "</div>" +
+                "</div>" +
+                "<div class='mb-3 ans'>" +
+                "</div>" +
+                "</div>" +
+                "</div>" +
+                "</div>" +
+                "</div>" +
+                "</div>"
+            );
+
+            // Append newVersion to #versions
+            newVersion.appendTo("#versions");
+
+
+            versionCounter++;
+        });
+
+        // Bind the click event for the 'Add Answer' button outside the version creation
+        $("#versions").on("click", ".an", function () {
+            var newAns = $(
+                "<div class='d-flex align-items-center justify-content-evenly py-4 input-group'>" +
+                "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer'/>" +
+                "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+                "<input class='form-control ms-3' id='Answer' type='file' placeholder='Example : Volt'>" +
+                "<button class='btn btn-danger ms-4 removeRow' data-repeater-delete>" +
+                "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                "</button>" +
+                "</div>"
+            );
+            $(this).closest(".card").find(".ans").append(newAns);
+        });
+
+        // Remove row
+        $("#versions").on("click", ".removeRow", function () {
+            $(this).closest(".d-flex").remove();
+            versionCounter--;
+        });
+
+        $(".an[data-version='main']").click(function () {
+            var newAns = $(
+                "<div class='d-flex align-items-center justify-content-evenly py-4 input-group'>" +
+                "<input type='radio' name='ans0' class='me-3 correct-answer'/>" +
+                "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+                "<input class='form-control ms-3' id='Answer' type='file' placeholder='Example : Volt'>" +
+                "<button class='btn btn-danger ms-4 removeRow' data-repeater-delete>" +
+                "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                "</button>" +
+                "</div>"
+            );
+            $(".ans-main").append(newAns);
+        });
+
+        $(document).on("click", ".removeRow", function () {
+            $(this).closest(".d-flex").remove();
+        });
+
+        var homeworkId = @Html.Raw(Json.Serialize(ViewBag.HomeworkId));
+
+        $("#submit").click(function (e) {
+            e.preventDefault();
+
+            var questionsJson = [];
+
+            $(".tab").each(function () {
+                var questionData = {
+                    Body: $(this).find(".Question").val(),
+                    ImgUrl: $(this).find(".ImgUrl").val(),
+                    Answers: [],
+                    CorrectAnswer: "",
+                    HomeworkId: homeworkId.toString(),
+                    VersionID: ""
+                };
+
+                $(this).find(".answer").each(function () {
+                    questionData.Answers.push($(this).val());
+                });
+
+                questionData.CorrectAnswer = $(this).find('.correct-answer:checked').closest('.input-group').find('.answer').val();
+                questionData.VersionID = $("#VersionID").val();
+                questionsJson.push(questionData);
+            });
+
+            console.log(questionsJson);
+
+            $.ajax({
+                url: '/Question/CreateHomework', // URL of the controller action
+                type: 'POST', // HTTP method
+                contentType: 'application/json', // Data type
+                data: JSON.stringify(questionsJson), // Convert questionsJson array to JSON string
+                success: function (response) {
+                    // Reload the current page
+                    location.reload();
+                    // window.location.href = '/Assesment/AssesmentForm';
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error('Error sending data to server:', error);
+                }
+            });
+        });
+    </script>
+}
+

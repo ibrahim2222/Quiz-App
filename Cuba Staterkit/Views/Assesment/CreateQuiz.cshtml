@@ -1,0 +1,397 @@
+﻿@model Guid;
+
+@{
+    ViewData["Title"] = "QuizForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<link rel="stylesheet" href="~/assets/css/imageStyles.css">
+
+
+<div class="page-body">
+    <div class="container-fluid">
+        <div class="page-title" style="margin-top: -29px !important;">
+            <div class="row">
+                <div class="col-6">
+                    <h3>Quiz</h3>
+                </div>
+                <div class="col-6">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a asp-controller="Dashboard" asp-action="Index">
+                                <svg class="stroke-icon">
+                                    <use href="../assets/svg/icon-sprite.svg#stroke-home"></use>
+                                </svg>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">Quiz Form</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <form asp-action="">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="text-center">
+                                <img width="60" class="me-2" height="60"
+                                     src="https://img.icons8.com/external-vitaliy-gorbachev-lineal-color-vitaly-gorbachev/60/external-question-online-learning-vitaliy-gorbachev-lineal-color-vitaly-gorbachev.png"
+                                     alt="external-question-online-learning-vitaliy-gorbachev-lineal-color-vitaly-gorbachev" />
+                                Question Creation
+                            </h5>
+                            <div class="form-buttons">
+                                <button class=" btn btn-primary rounded-pill" id="submit" value="submit" type="submit">
+                                    <i class="fas fa-plus"></i>
+                                    Submit
+                                </button>
+                                <button class="btn btn-warning addRow rounded-pill" type="button"><i class="fas fa-code-branch"></i> Add Version</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mt-3">
+                                <div class="col-sm-12 col-xl-12">
+                                    <div class="card card-absolute  border border-secondary">
+                                        <div class="card-header bg-primary" style="top: -46px;">
+                                            <h4 class="text-white">Main Question</h4>
+                                        </div>
+                                        <div class="card-body align-items-center justify-content-center tab">
+                                            <div class="widget-content">
+                                                <input type="hidden" name="quizId" value="@Model" /> @*id of the quiz*@
+                                                <div class="row">
+                                                    <div class="mb-3">
+                                                        <label for="Question"><strong>Question Body :</strong></label>
+                                                        <div class="input-group">
+                                                            <input class="form-control Question" id="Question" type="text" name="Body"
+                                                                   placeholder="Example : What is the Measuring unit of Voltage ?">
+                                                            <input class="form-control ms-3 ImgUrl" type="file" name="BodyImage" data-image-target="mainQuestion" id="BodyImage">
+                                                            <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-toggle="modal" data-target="#imagePreviewModal" data-image-target="mainQuestion">
+                                                                <i class="far fa-file-image" style="font-size: 18px;"></i>
+                                                            </button>
+
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="Answer"><strong>Answer Body :</strong></label>
+                                                        <div class="input-group py-3">
+                                                            <input type="radio" name="ans0" class='me-3 correct-answer' checked />
+                                                            <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt">
+                                                            <input class="form-control ms-2 ImgUrl ImgUrlAns" id="AnswerImage" type="file" placeholder="Example: Volt">
+                                                            <button class="btn btn-success ms-4 rounded-pill an" type="button" data-version="main">
+                                                                <i class="fas fa-plus-circle"></i>
+                                                            </button>
+
+                                                            <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" ><i class="far fa-file-image" style="font-size: 18px;"></i></button>
+                                                        </div>
+                                                        <div class="mb-3 ans-main">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" name="Answers" />
+                                                <input type="hidden" name="CorrectAnswer" />
+                                                <input type="hidden" name="VersionID" id="VersionID" value="1" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="versions">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Your existing code -->
+
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="gap: 8px; padding-top: 36px; background-color: transparent; border: none; align-items: flex-end;">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div id="imgBox" style="max-width: 100%; max-height: 100%;">
+                <img class="ImgUrl img-fluid" src="" alt="" id="selectedImagePreview" style="object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Your existing code -->
+@section Script{
+    <!-- Plugins JS start-->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    @*<script src="../assets/js/sidebar-menu.js"></script>
+    <script src="../assets/js/slick/slick.min.js"></script>
+    <script src="../assets/js/slick/slick.js"></script>
+    <script src="../assets/js/header-slick.js"></script>
+    <script src="../assets/js/form-wizard/form-wizard.js"></script>*@
+
+    <!-- Plugins JS Ends-->
+    <!-- Theme js-->
+    @*<script src="../assets/js/script.js"></script>*@
+
+    <script>
+        $(document).ready(function () {
+           
+            $(document).on('click', '.viewImage', function () {
+                var inputElement = $(this).closest('.input-group').find('.ImgUrl')[0];
+                if (inputElement.files && inputElement.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("#selectedImagePreview").attr("src", e.target.result);
+                        $("#imagePreviewModal").modal("show");
+                    };
+                    reader.readAsDataURL(inputElement.files[0]);
+                }
+                else{
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "You must upload a picture",
+                       
+                    });
+                }
+            });
+
+            var versionCounter = 1, counter = 0;
+
+            $("#versions").on("click", ".removeVersion", function () {
+                var versionToRemove = $(this).data("version");
+                $("#version" + versionToRemove).remove();
+            });
+
+            $(".addRow").click(function () {
+                counter++;
+                var newVersion = $(
+                    "<div class='col-sm-12 col-xl-12 mt-5 mb-3 tab' id='version" + versionCounter + "'>" +
+                        "<div class='card card-absolute border border-secondary mt-5'>" +
+                            "<div class='card-header bg-primary' style='top: -46px;'>" +
+                                "<h4 class='text-white'>Version " + versionCounter + "</h4>" +
+                                "<div style='text-align: right !important;'>" +
+                                "</div>" +
+                            "</div>" +
+                            "<div class='card-body align-items-center justify-content-center'>" +
+                                "<div class='widget-content'>" +
+                                    "<div class='row'>" +
+                                        "<div class='col-lg-12'>" +
+                                            "<div style='text-align: right !important;'>" +
+                                            "<button class='btn btn-danger text-right rounded-pill removeVersion' data-version='" + versionCounter + "'>Remove</button>" +
+                                            "</div>" +
+                                        "</div>" +
+                                        "<div class='mb-3'>" +
+                                            "<label for='Question'><strong>Question Body :</strong></label>" +
+                                            "<div class='input-group'>" +
+                                                "<input class='form-control Question' id='Question' type='text' name='Body' placeholder='Example : What is the Measuring unit of Voltage ?'>" +
+                                                "<input class='form-control ms-3 ImgUrl' id='BodyImage' type='file' name='ImgUrl' placeholder='Example : Volt' id='BodyImage'>" +
+                                                "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                                            "</div>" +
+                                        "</div>" +
+                                        "<div class='mb-3'>" +
+                                            "<label for='Answer'><strong>Answer Body :</strong></label>" +
+                                            "<div class='input-group py-3'>" +
+                                                "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer' checked />" +
+                                                "<input class='form-control answer' id='Answer' type='text' placeholder='Example : Volt'>" +
+                                                "<input class='form-control ms-2 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
+                                                "<button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>" +
+                                                "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                                            "</div>" +
+                                        "</div>" +
+                                        "<div class='mb-3 ans'>" +
+                                        "</div>" +
+                                    "</div>" +
+                                "</div>" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>"
+                );
+                newVersion.appendTo("#versions");
+                versionCounter++;
+            });
+
+            $("#versions").on("click", ".an", function () {
+                var newAns = $(
+                    "<div class='d-flex align-items-center justify-content-evenly py-4 input-group'>" +
+                        "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer'/>" +
+                        "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+                        "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
+                        "<button class='btn btn-danger ms-4 rounded-pill removeRow' data-repeater-delete>" +
+                            "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                        "</button>" +
+                        "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                    "</div>"
+                );
+                $(this).closest(".card").find(".ans").append(newAns);
+            });
+
+            $("#versions").on("click", ".removeRow", function () {
+                $(this).closest(".d-flex").remove();
+                versionCounter--;
+            });
+
+            $(".an[data-version='main']").click(function () {
+                var newAns = $(
+                    "<div class='d-flex align-items-center justify-content-evenly py-4 input-group'>" +
+                        "<input type='radio' name='ans0' class='me-3 correct-answer'/>" +
+                        "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+                        "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
+                        "<button class='btn btn-danger rounded-pill ms-4 removeRow' data-repeater-delete>" +
+                            "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                        "</button>" +
+                        "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                    "</div>"
+                );
+                $(".ans-main").append(newAns);
+            });
+
+            $(document).on("click", ".removeRow", function () {
+                $(this).closest(".d-flex").remove();
+            });
+
+
+
+            var QuizId = @Html.Raw(Json.Serialize(Model));
+
+
+
+
+            $("#submit").click(function (e) {
+                e.preventDefault();
+
+                const swal = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success mx-2 rounded-pill",
+                        cancelButton: "btn btn-danger rounded-pill"
+                    },
+                    buttonsStyling: false
+                });
+
+                swal.fire({
+                    title: "Successfully Added !",
+                    text: "Do you want to add another question ?",
+                    icon: "success",
+                    showCancelButton: true,
+
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var questionsJson = [];
+                        var formData = new FormData();
+                        var tabNumber = 0;
+                        $(".tab").each(function () {
+                            var fileInput = $(this).find("#BodyImage")[0];
+                            var file = fileInput.files[0];
+                            formData.append('bodyImage_' + tabNumber, file);
+
+                            var j = 0;
+                            $(this).find('.ImgUrlAns').each(function () {
+                                var answerFileInput = $(this)[0];
+                                var answerFiles = answerFileInput.files[0];
+                                formData.set('answerImages_' + tabNumber + "_" + j, answerFiles);
+                                j++;
+                            });
+
+                            var correctAnswerIndex = -1;
+                            var radioButtons = $(this).find('input[type="radio"]');
+                            var radioButtonArray = Array.from(radioButtons);
+                            for (var i = 0; i < radioButtonArray.length; i++) {
+                                if (radioButtonArray[i].checked == true) {
+                                    correctAnswerIndex = i;
+                                    break;
+                                }
+                            }
+
+                            var questionData = {
+                                Body: $(this).find(".Question").val(),
+                                Answers: [],
+                                CorrectAnswer: "",
+                                CorrectAnswerIndex: correctAnswerIndex,
+                                QuizID: QuizId.toString(),
+                                VersionID: ""
+                            };
+
+                            $(this).find(".answer").each(function () {
+                                questionData.Answers.push($(this).val());
+                            });
+
+                            questionData.CorrectAnswer = $(this).find('.correct-answer:checked').closest('.input-group').find('.answer').val();
+                            questionData.VersionID = $("#VersionID").val();
+                            questionsJson.push(questionData);
+                            tabNumber++;
+                        });
+
+                        for(let pair of formData) {
+                            console.log(pair[0] + ', ' + pair[1]);
+                        }
+
+                        $.ajax({
+                            url: '/Question/UploadFiles',
+                            type: 'POST',
+                            data: formData,
+                            contentType: false,
+                            processData: false,
+                            success: function (fileResponse) {
+                                $.ajax({
+                                    url: '/Question/Create',
+                                    type: 'POST',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify({ questions: questionsJson, filePaths: fileResponse }),
+                                    success: function (response) {
+                                        location.reload();
+                                    },
+                                    error: function (xhr, status, error) {
+                                        console.error('Error sending data to server:', error);
+                                    }
+                                });
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error uploading file:', error);
+                            }
+                        });
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        //msh 3arf aroo7 llcontroller
+                        var questionsJson = [];
+                        $(".tab").each(function () {
+                            var questionData = {
+                                Body: $(this).find(".Question").val(),
+                                ImgUrl: $(this).find(".ImgUrl").val(),
+                                Answers: [],
+                                CorrectAnswer: "",
+                                QuizID: QuizId.toString(),
+                                VersionID: ""
+                            };
+
+                            $(this).find(".answer").each(function () {
+                                questionData.Answers.push($(this).val());
+                            });
+
+                            questionData.CorrectAnswer = $(this).find('.correct-answer:checked').closest('.input-group').find('.answer').val();
+                            questionData.VersionID = $("#VersionID").val();
+                            questionsJson.push(questionData);
+                        });
+
+                        $.ajax({
+                            url: '/Question/Create',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(questionsJson),
+                            success: function (response) {
+                                window.location.href = '/Quiz/AllQuizes';
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error sending data to server:', error);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
+

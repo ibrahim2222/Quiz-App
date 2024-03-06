@@ -1,0 +1,355 @@
+﻿@model List<Question>
+@{
+    ViewData["Title"] = "EditQuestions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var MainQuestionCounter = 1;
+    var VersionCounter = 0;
+    var RadioCounter = 0;
+}
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<div class="page-body">
+    <div class="container-fluid">
+        <div class="page-title" style="margin-top: -29px !important;">
+            <div class="row">
+                <div class="col-6">
+                    <h3>Form Wizard</h3>
+                </div>
+                <div class="col-6">
+               
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Container-fluid starts-->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="text-center">
+                            <img width="60" class="me-2" height="60"
+                                 src="https://img.icons8.com/external-vitaliy-gorbachev-lineal-color-vitaly-gorbachev/60/external-question-online-learning-vitaliy-gorbachev-lineal-color-vitaly-gorbachev.png" />
+                            Question Edit
+                        </h5>
+                        <div class="form-buttons">
+                            <button class=" btn btn-warning rounded-pill" id="submit" value="submit" type="submit">
+                                <i class="fas fa-pencil-alt me-1 text-black" style="color: black !important; font-size: 15px;"></i>
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs nav-secondary" id="question-tabs" role="tablist">
+                            @{
+                                var Tabcounter = 0;
+                            }
+                            @foreach (var mainQuestion in Model.Where(q => q.ID.ToString() == q.VersionID))
+                            {
+                                Tabcounter++;
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link @(Tabcounter == 1 ? "active" : "")" id="question-tab-@mainQuestion.ID" data-bs-toggle="tab" href="#question-@mainQuestion.ID" role="tab" aria-controls="question-@mainQuestion.ID" aria-selected="false"><h5><i class="far fa-file-pdf"></i> Question @Tabcounter</h5></a>
+                                </li>
+                            }
+
+                        </ul>
+
+                        <div class="tab-content" id="question-tabs-content">
+                            @foreach (var mainQuestion in Model.Where(q => q.ID.ToString() == q.VersionID))
+                            {
+                                <div class="tab-pane @(MainQuestionCounter == 1 ? "fade show active" : "fade")" id="question-@mainQuestion.ID" role="tabpanel" aria-labelledby="question-tab-@mainQuestion.ID">
+                                    <div class="col-sm-12 col-xl-12 mt-5" style="top: -46px;">
+                                        <div class="card card-absolute border border-secondary" style="margin-top:8%;">
+                                            <div class="card-header bg-primary rounded-pill" style="top: -26px;">
+                                                <h5 class="text-white"> Main Question</h5>
+                                            </div>
+                                            <div class="card-body align-items-center justify-content-center tab">
+                                                <div class="widget-content">
+                                                    <input type="hidden" name="quizId" value="@Model" />
+                                                    <div class="row">
+                                                        <div class="mb-3">
+                                                            <label for="Question"><strong>Question Body :</strong></label>
+                                                            <div class="input-group">
+                                                                <input class="form-control Question" id="Question" type="text" name="Body"
+                                                                       placeholder="Example : What is the Measuring unit of Voltage ?" asp-for="@mainQuestion.Body">
+                                                                <input class="form-control ms-3" type="file" asp-for="@mainQuestion.ImgUrl" id="BodyImage">
+                                                                <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@mainQuestion.ImgUrl">
+                                                                    <i class="far fa-file-image" style="font-size: 18px;"></i>
+                                                                </button>
+
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="Answer"><strong>Answer Body :</strong></label>
+                                                            @{
+                                                                var AnswersText = mainQuestion.Answers.Split(',');
+                                                                var AnswerImages = mainQuestion.AnswersURL.Split(',');
+                                                                var RadioId = "q" + RadioCounter;
+                                                            }
+
+                                                            @for (var index = 0; index < AnswersText.Length; index++)
+                                                            {
+                                                                var Ans = AnswersText[index];
+                                                                var ImageSrc = AnswerImages[index];
+                                                                <div class="input-group py-1">
+                                                                    <input type="radio" name="@("Radio" + RadioId)" class='me-3 correct-answer' checked="@(Ans == mainQuestion.CorrectAnswer)" />
+                                                                    <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt" asp-for="@Ans">
+                                                                    <input class="form-control ms-3" type="file" asp-for="@ImageSrc" id="AnswerImage">
+                                                                    <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@ImageSrc">
+                                                                        <i class="far fa-file-image" style="font-size: 18px;"></i>
+                                                                    </button>
+                                                                </div>
+                                                            }
+
+                                                            @{RadioCounter++;}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @{
+                                            VersionCounter = 0;
+                                        }
+                                        @foreach (var version in Model.Where(q => q.VersionID == mainQuestion.ID.ToString() && q.ID != mainQuestion.ID))
+                                        {
+                                            VersionCounter++;
+                                            <div class="card card-absolute border border-secondary" style="margin-top: 7% !important;">
+                                                <div class="card-header bg-warning rounded-pill" style="top: -26px;">
+                                                    <h5 class="text-white">Version : @VersionCounter</h5>
+                                                </div>
+                                                <div class="card-body align-items-center justify-content-center tab">
+                                                    <div class="widget-content">
+                                                        <div class="row">
+                                                            <div class="mb-3">
+                                                                <label for="Question"><strong>Question Version Body :</strong></label>
+                                                                <div class="input-group">
+                                                                    <input class="form-control Question" id="Question" type="text" name="Body" 
+                                                                           placeholder="Example : What is the Measuring unit of Voltage ?" asp-for="@version.Body">
+                                                                    <input class="form-control ms-3" type="file" asp-for="@version.AnswersURL" id="BodyImage">
+
+                                                                    <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@version.ImgUrl">
+                                                                        <i class="far fa-file-image" style="font-size: 18px;"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="Answer"><strong>Answer Body :</strong></label>
+                                                                @{
+                                                                    
+
+                                                                    var VersionAnswersText = version.Answers.Split(',');
+                                                                    var VersionAnswersAnswerImages = version.AnswersURL.Split(',');
+                                                                    var VersionRadioId = "q" + RadioCounter;
+                                                                    @for (var index = 0; index < VersionAnswersText.Length; index++)
+                                                                    {
+                                                                        var Ans = VersionAnswersText[index];
+                                                                        var ImageSrc = VersionAnswersAnswerImages[index];
+                                                                        <div class="input-group py-1">
+                                                                            <input type="radio" name="@("Radio" + VersionRadioId)" class='me-3 correct-answer' checked="@(Ans == version.CorrectAnswer)" />
+                                                                            <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt" asp-for="@Ans">
+                                                                            <input class="form-control ms-3" type="file" value="@AnswerImages" asp-for="@Ans" id="AnswerImage">
+                                                                            <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@ImageSrc">
+                                                                                <i class="far fa-file-image" style="font-size: 18px;"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                    }
+
+                                                                    RadioCounter++;
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        }
+
+                                    </div>
+                                </div>
+                                MainQuestionCounter++;
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="gap: 8px; padding-top: 36px; background-color: transparent; border: none; align-items: flex-end;">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div id="imgBox" style="max-width: 100%; max-height: 100%;">
+                <img class="ImgUrl img-fluid" src="" alt="" id="selectedImagePreview" style="object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('.viewImage').on('click', function () {
+        var imageSrc = $(this).data('image-src');
+        var imageName = imageSrc.split('\\').pop();
+
+        // Construct the URL using Razor syntax
+        var imageFinalUrl = '@Url.Content("~/uploads/")' + imageName;
+
+        console.log("Image Name: " + imageFinalUrl);
+
+        $('#selectedImagePreview').attr('src', imageFinalUrl);
+
+        $('#imagePreviewModal').modal('show');
+    });
+
+
+    var QuizId = @Html.Raw(Json.Serialize(Model.FirstOrDefault().QuizID));
+
+
+    $("#submit").click(function (e) {
+        e.preventDefault();
+
+        const swal = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success mx-2 rounded-pill",
+                cancelButton: "btn btn-danger rounded-pill"
+            },
+            buttonsStyling: false
+        });
+
+        swal.fire({
+            title: "Successfully Added !",
+            text: "Do you want to add another question ?",
+            icon: "success",
+            showCancelButton: true,
+
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                var questionsJson = [];
+                var formData = new FormData();
+                var tabNumber = 0;
+                $(".tab").each(function () {
+                    var fileInput = $(this).find("#BodyImage")[0];
+                    var file = fileInput.files[0];
+                    formData.append('bodyImage_' + tabNumber, file);
+
+                    var j = 0;
+                    $(this).find('.ImgUrlAns').each(function () {
+                        var answerFileInput = $(this)[0];
+                        var answerFiles = answerFileInput.files[0];
+                        formData.set('answerImages_' + tabNumber + "_" + j, answerFiles);
+                        j++;
+                    });
+
+                    var correctAnswerIndex = -1;
+                    var radioButtons = $(this).find('input[type="radio"]');
+                    var radioButtonArray = Array.from(radioButtons);
+                    for (var i = 0; i < radioButtonArray.length; i++) {
+                        if (radioButtonArray[i].checked == true) {
+                            correctAnswerIndex = i;
+                            break;
+                        }
+                    }
+
+                    var questionData = {
+                        Body: $(this).find(".Question").val(),
+                        Answers: [],
+                        CorrectAnswer: "",
+                        CorrectAnswerIndex: correctAnswerIndex,
+                        QuizID: QuizId.toString(),
+                        VersionID: ""
+                    };
+
+                    $(this).find(".answer").each(function () {
+                        questionData.Answers.push($(this).val());
+                    });
+
+                    questionData.CorrectAnswer = $(this).find('.correct-answer:checked').closest('.input-group').find('.answer').val();
+                    questionData.VersionID = $("#VersionID").val();
+                    questionsJson.push(questionData);
+                    tabNumber++;
+
+
+                });
+                
+                for (let pair of formData) {
+                    console.log(pair[0] + ', ' + pair[1]);
+                }
+
+
+                console.log(questionsJson);
+
+
+                
+
+                //$.ajax({
+                //    url: '/Question/UploadFiles',
+                //    type: 'POST',
+                //    data: formData,
+                //    contentType: false,
+                //    processData: false,
+                //    success: function (fileResponse) {
+                //        $.ajax({
+                //            url: '/Question/Create',
+                //            type: 'POST',
+                //            contentType: 'application/json',
+                //            data: JSON.stringify({ questions: questionsJson, filePaths: fileResponse }),
+                //            success: function (response) {
+                //                location.reload();
+                //            },
+                //            error: function (xhr, status, error) {
+                //                console.error('Error sending data to server:', error);
+                //            }
+                //        });
+                //    },
+                //    error: function (xhr, status, error) {
+                //        console.error('Error uploading file:', error);
+                //    }
+                //});
+
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                //msh 3arf aroo7 llcontroller
+                var questionsJson = [];
+                $(".tab").each(function () {
+                    var questionData = {
+                        Body: $(this).find(".Question").val(),
+                        ImgUrl: $(this).find(".ImgUrl").val(),
+                        Answers: [],
+                        CorrectAnswer: "",
+                        QuizID: QuizId.toString(),
+                        VersionID: ""
+                    };
+
+                    $(this).find(".answer").each(function () {
+                        questionData.Answers.push($(this).val());
+                    });
+
+                    questionData.CorrectAnswer = $(this).find('.correct-answer:checked').closest('.input-group').find('.answer').val();
+                    questionData.VersionID = $("#VersionID").val();
+                    questionsJson.push(questionData);
+                });
+
+                //$.ajax({
+                //    url: '/Question/Create',
+                //    type: 'POST',
+                //    contentType: 'application/json',
+                //    data: JSON.stringify(questionsJson),
+                //    success: function (response) {
+                //        window.location.href = '/Quiz/AllQuizes';
+                //    },
+                //    error: function (xhr, status, error) {
+                //        console.error('Error sending data to server:', error);
+                //    }
+                //});
+            }
+        });
+    });
+
+</script>
+
+
+

@@ -1,0 +1,219 @@
+﻿@model IEnumerable<Cuba_Staterkit.Models.Quiz>
+@{
+    int lastSessionNumber = ViewBag.lastSessionNumber + 1;
+}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<div class="page-body">   
+    <div class="container-fluid">
+        <div class="page-title" style="margin-top: -29px !important;">
+            <div class="row">
+                <div class="col-6">
+                </div>
+                <div class="col-6">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#backDropModal2"><i class="fas fa-plus-circle me-1"></i> Add</a></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-sm-12 col-xl-12">
+                <div class="card-body align-items-center justify-content-center text-center">
+                    <div class="widget-content">
+
+                        <div class="row">
+                            @if (Model.Any())
+                            {
+                                @foreach (var Quiz in Model.OrderBy(S => S.Session.SessionNumber))
+                                {
+                                    <div class="col-sm-12 col-xl-4">
+                                        <div class="card card-absolute widget-hover border border-secondary" style="transition: 1s;">
+                                            <div class="card-header bg-primary" style="top: -36px;">
+                                                <h5 class="text-white" style="font-size:20px;"><span>Session : </span>@Quiz.Session.SessionNumber </h5>
+                                            </div>
+                                            <div class="card-body align-items-center justify-content-center text-center">
+                                                <div class="widget-content">
+                                                    <div class="">
+                                                        <h5>
+                                                            <i class="fas fa-signature"></i> Quiz : <span class="quizName badge rounded-pill badge-light-warning" contenteditable>@Quiz.Name</span>
+                                                        </h5>
+                                                        <input type="hidden" value="@Quiz.Id" id="quizId">
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <div class="whatsnew-btn">
+                                                            @if (Quiz.Questions != null && Quiz.Questions.Any())
+                                                            {
+                                                                <a class="btn btn-warning rounded-pill" asp-controller="Quiz" asp-action="Check" asp-route-id="@Quiz.Id"><i class="far fa-edit"></i> Edit</a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <a class="btn btn-success rounded-pill" asp-controller="Assesment" asp-action="CreateQuiz" asp-route-id="@Quiz.Id"> <i class="fas fa-plus-circle"></i> Add</a>
+                                                            }
+
+                                                            <a class="btn btn-danger rounded-pill delete-btn" data-quizid="@Quiz.Session.SessionNumber" data-sessionid="@Quiz.SessionID"><strong><i class="fas fa-trash-alt"></i></strong></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                
+                            }
+                            else
+                            {
+                                <div class="card mb-5 w-75 mx-auto d-flex justify-content-center align-items-center border border-secondary rounded-pill" id="no-quizzes-placeholder">
+                                    <div class="row g-0 text-center">
+                                        <h2 class="mb-0"><img width="70" height="70" src="https://img.icons8.com/fluency/70/cancel.png" alt="cancel" /> No published Quizes</h2>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="backDropModal2" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="backDropModalTitle"><img width="90" height="90" src="https://img.icons8.com/bubbles/90/classroom.png" alt="classroom" /> Create Quiz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div id="sessionExistsError" class="text-danger mb-3"></div>
+
+                <div class="row g-2">
+                    <div class="col mb-2">
+                        <label for="emailBackdrop" class="form-label"><i class="fas fa-sort-numeric-up-alt"></i> <strong>Session Number</strong></label>
+                        <input type="number" id="emailBackdrop" name="SessionNumber" class="form-control rounded-pill" placeholder="Example: 1" data-input-name="SessionNumber" value="@lastSessionNumber" disabled>
+                    </div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col mb-2">
+                        <label for="dobBackdrop" class="form-label"><i class="fas fa-signature"></i> <strong>Quiz Name</strong></label>
+                        <input type="text" id="dobBackdrop" name="QuizName" class="form-control rounded-pill" placeholder="Example: Quiz 1" data-input-name="QuizName">
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                <button type="submit" id="submit" class="btn btn-primary rounded-pill">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+<script>
+    $(document).on("click", ".delete-btn", function (e) {
+        e.preventDefault();
+
+        var sessionId = $(this).data("sessionid");
+
+        $.ajax({
+            url: "/Quiz/DeleteQuiz",
+            type: "POST",
+            data: { id: sessionId },
+            success: function (response) {
+               
+
+                var deletedCard = $(`[data-sessionid="${sessionId}"]`).closest('.col-sm-12');
+                deletedCard.fadeOut('slow', function () {
+                    deletedCard.remove();
+
+                    var remainingCards = $('.col-sm-12').length -1;
+                    console.log("Remaing Cards are :"+remainingCards);
+
+                    if (remainingCards === 0) {
+                        location.reload();
+                    }
+                });
+            },
+            //error: function (error) {
+              //  console.error(error);
+            //}
+        });
+    });
+
+
+
+    $("#submit").click(function (e) {
+        e.preventDefault();
+       // alert("SS");
+        var formData = {
+            SessionNumber: $("#emailBackdrop").val(),
+            QuizName: $("#dobBackdrop").val(),
+        };
+        //console.log(formData);
+         $.ajax({
+                url: "/Quiz/CreateQuiz",
+                type: "POST",
+                data: formData,
+                success: function (response) {
+                    console.log(response);
+                    console.log(formData);
+
+                    if (response.sessionExists) {
+                        // Session already exists, show error message in the modal
+                        $("#sessionExistsError").text("Session already exists. Please choose a different session number.");
+                    } else {
+                        // Session doesn't exist, close modal and reload
+                        $("#backDropModal2").modal("hide");
+                        location.reload();
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+
+
+    });
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var quizNameElements = document.getElementsByClassName("quizName");
+        for (var i = 0; i < quizNameElements.length; i++) {
+            quizNameElements[i].addEventListener("blur", function () {
+                var quizId = this.parentElement.parentElement.querySelector("#quizId").value;
+                yourFunctionName(this.innerText, quizId);
+            });
+        }
+    });
+
+    function yourFunctionName(newValue, quizId) {
+        console.log("New value of the editable span:", newValue);
+        console.log("Quiz Id:", quizId);
+        var request = {
+            QuizName: newValue,
+            QuizId: quizId
+        };
+        console.log(request);
+        $.ajax({
+            url: '/Quiz/EditQuizName',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(request),
+            success: function (response) {
+                location.reload();
+            },
+            error: function (xhr, status, error) {
+                console.error('Error sending data to server:', error);
+            }
+        });
+    }
+</script>

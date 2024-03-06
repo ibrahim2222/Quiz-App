@@ -1,0 +1,30 @@
+﻿#imgBox {
+    background: #727272;
+    color: #fff;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    max-width: 450px;
+    height: 25vh;
+    margin: auto;
+    position: relative;
+    min-width: 350px;
+}
+
+.upload-icon {
+    width: 60px;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: pointer;
+    opacity: 50%;
+}
+
+#imgUploaded {
+    visibility: hidden;
+    max-width: 100%;
+    max-height: 100%;
+    margin-left: 50%;
+    transform: translateX(-50%);
+}
