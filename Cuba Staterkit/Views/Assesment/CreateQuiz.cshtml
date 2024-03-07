@@ -326,10 +326,6 @@
                             tabNumber++;
                         });
 
-                        for(let pair of formData) {
-                            console.log(pair[0] + ', ' + pair[1]);
-                        }
-
                         $.ajax({
                             url: '/Question/UploadFiles',
                             type: 'POST',

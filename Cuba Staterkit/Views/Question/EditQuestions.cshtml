@@ -78,9 +78,8 @@
                                                         <div class="row">
                                                             <div class="col-lg-12">
                                                                 <div style="text-align: right !important;">
-                                                                    <button class="btn btn-success ms-4 rounded-pill an" type="button" data-version="main"><i class="fas fa-plus-circle"></i> Add Answer</button>
+                                                                    @*<button class="btn btn-success ms-4 rounded-pill an" type="button" data-version="main"><i class="fas fa-plus-circle"></i> Add Answer</button>*@                                                                    
                                                                     <button class="btn btn-danger text-right rounded-pill removeMainQuestion" data-question-id="@mainQuestion.ID"><strong><i class="fas fa-trash-alt"></i></strong></button>
-
                                                                 </div>
                                                             </div>
 
@@ -102,26 +101,40 @@
                                                                 <label for="Answer"><strong>Answer Body :</strong></label>
                                                                 @{
                                                                     var AnswersText = mainQuestion.Answers.Split(',');
-                                                                    var AnswerImages = mainQuestion.AnswersURL.Split(',');
-                                                                    var RadioId = "q" + RadioCounter;
+                                                                    var AnswerImages = mainQuestion.AnswersURL == null ? null : mainQuestion.AnswersURL.Split(',');
+                                                                    var RadioId = "q" + RadioCounter;                                
                                                                 }
 
                                                                 @for (var index = 0; index < AnswersText.Length; index++)
                                                                 {
-                                                                    var Ans = AnswersText[index];
-                                                                    var ImageSrc = AnswerImages[index];
+                                                                    @*string? Ans = AnswersText[index];*@
+                                                                    string Ans = AnswersText != null ? AnswersText[index] : "";
+                                                                    string? ImageSrc = AnswerImages != null ? AnswerImages[index] : null;
+                                                                    bool correctImg = mainQuestion.CorrectAnswerUrl == ImageSrc ? true : false;
+                                                                    bool correctTxt = mainQuestion.CorrectAnswer == Ans ? true : false;
+
                                                                     <div class="input-group py-2">
-                                                                        <input type="radio" name="@("Radio" + RadioId)" class='me-3 correct-answer' checked="@(Ans == mainQuestion.CorrectAnswer)" />
+                                                                        <input type="radio" name="@("Radio" + RadioId)" class='me-3 correct-answer' checked="@(correctImg && correctTxt)"/>
                                                                         <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt" asp-for="@Ans">
                                                                         <input class="form-control ms-3" type="file" asp-for="@ImageSrc" id="AnswerImage">
-
+                                                                        @if (index == 0)
+                                                                        {
+                                                                            <button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <button class='btn btn-danger ms-4 rounded-pill removeRow' data-repeater-delete>
+                                                                                <span class='align-middle'><i class='fas fa-backspace'></i></span>
+                                                                            </button>
+                                                                        }
                                                                         <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@ImageSrc">
                                                                             <i class="far fa-file-image" style="font-size: 18px;"></i>
                                                                         </button>
                                                                     </div>
 
                                                                 }
-                                                                <div class="ans-main">
+
+                                                                <div class="ans">
                                                                 </div>
 
                                                                 @{
@@ -132,11 +145,10 @@
                                                     </div>
                                                 </div>
                                             </div>
+
                                             @{
                                                 VersionCounter = 0;
                                             }
-
-
 
                                             @foreach (var version in Model.Where(q => q.VersionID == mainQuestion.ID.ToString() && q.ID != mainQuestion.ID))
                                             {
@@ -180,6 +192,12 @@
                                                                                 @if (index == 0)
                                                                                 {
                                                                                     <button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>
+                                                                                } 
+                                                                                else
+                                                                                {
+                                                                                    <button class='btn btn-danger ms-4 rounded-pill removeRow' data-repeater-delete>
+                                                                                        <span class='align-middle'><i class='fas fa-backspace'></i></span>
+                                                                                    </button>
                                                                                 }
                                                                                 <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@ImageSrc">
                                                                                     <i class="far fa-file-image" style="font-size: 18px;"></i>
@@ -188,13 +206,13 @@
                                                                         }
                                                                         RadioCounter++;
                                                                     }
+                                                                    <div class="ans"></div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             }
-                                            <div id="versions" style="margin-top: 7% !important;"></div>
                                         </div>
                                     </div>
                                     MainQuestionCounter++;
@@ -231,30 +249,27 @@
 </div>
 
 <script>
-    $('.viewImage').on('click', function () {
-        var imageSrc = $(this).data('image-src');
-        var imageName = imageSrc.split('\\').pop();
-        var imageFinalUrl = '@Url.Content("~/uploads/")' + imageName
-        $('#selectedImagePreview').attr('src', imageFinalUrl);
-        $('#imagePreviewModal').modal('show');
-    });
-
     $(document).on('click', '.viewImage', function () {
+        var imageSrc = $(this).data('image-src');
         var inputElement = $(this).closest('.input-group').find('.ImgUrl')[0];
-        if (inputElement.files && inputElement.files[0]) {
+
+        if (imageSrc) {
+            var imageName = imageSrc.split('\\').pop();
+            var imageFinalUrl = '@Url.Content("~/uploads/")' + imageName;
+            $("#selectedImagePreview").attr("src", imageFinalUrl);
+            $("#imagePreviewModal").modal("show");
+        } else if (inputElement && inputElement.files && inputElement.files[0]) {
             var reader = new FileReader();
             reader.onload = function (e) {
                 $("#selectedImagePreview").attr("src", e.target.result);
                 $("#imagePreviewModal").modal("show");
             };
             reader.readAsDataURL(inputElement.files[0]);
-        }
-        else {
+        } else {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
                 text: "You must upload a picture",
-
             });
         }
     });
@@ -262,7 +277,6 @@
     var versionCounter = @VersionCounter + 1, counter = 0;
 
     var activeTab = $(".tab-content .tab-pane.active");
-
 
     //console.log("Appending to tab:", activeTab.attr("id"));
 
@@ -277,43 +291,43 @@
         counter++;
         var newVersion = $(
             "<div class='col-sm-12 col-xl-12 mt-5 mb-3 tab' id='version" + versionCounter + "'>" +
-            "<div class='card card-absolute border border-secondary mt-5'>" +
-            "<div class='card-header bg-warning rounded-pill' style='top: -26px;'>" +
-            "<h5 class='text-white'>Version : " + versionCounter + "</h5>" +
-            "</div>" +
-            "<div class='card-body align-items-center justify-content-center'>" +
-            "<div class='widget-content'>" +
-            "<div class='row'>" +
-            "<div class='col-lg-12'>" +
-            "<div style='text-align: right !important;'>" +
-            "<button class='btn btn-danger text-right rounded-pill removeVersion' data-version='" + versionCounter + "'>Remove</button>" +
-            "</div>" +
-            "</div>" +
-            "<div class='mb-3'>" +
-            "<label for='Question'><strong>Question Body :</strong></label>" +
-            "<div class='input-group'>" +
-            "<input class='form-control Question' id='Question' type='text' name='Body' placeholder='Example : What is the Measuring unit of Voltage ?'>" +
-            "<input class='form-control ms-3 ImgUrl' id='BodyImage' type='file' name='ImgUrl' placeholder='Example : Volt' id='BodyImage'>" +
-            "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
-            "</div>" +
-            "</div>" +
-            "<div class='mb-3'>" +
-            "<label for='Answer'><strong>Answer Body :</strong></label>" +
-            "<div class='input-group py-3'>" +
-            "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer' checked />" +
-            "<input class='form-control answer' id='Answer' type='text' placeholder='Example : Volt'>" +
-            "<input class='form-control ms-2 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
-            "<button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>" +
-            "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
-            "</div>" +
-            "</div>" +
-            "<div class='mb-3 ans'>" +
-            "</div>" +
-            "</div>" +
-            "</div>" +
-            "</div>" +
-            "</div>" +
-            "</div>" +
+                "<div class='card card-absolute border border-secondary mt-5'>" +
+                    "<div class='card-header bg-warning rounded-pill' style='top: -26px;'>" +
+                        "<h5 class='text-white'>New Version</h5>" +
+                    "</div>" +
+                        "<div class='card-body align-items-center justify-content-center'>" +
+                            "<div class='widget-content'>" +
+                                "<div class='row'>" +
+                                    "<div class='col-lg-12'>" +
+                                        "<div style='text-align: right !important;'>" +
+                                            "<button class='btn btn-danger text-right rounded-pill removeVersion' data-version='" + versionCounter + "'>Remove</button>" +
+                                        "</div>" +
+                                    "</div>" +
+                                    "<div class='mb-3'>" +
+                                        "<label for='Question'><strong>Question Body :</strong></label>" +
+                                        "<div class='input-group'>" +
+                                            "<input class='form-control Question' id='Question' type='text' name='Body' placeholder='Example : What is the Measuring unit of Voltage ?'>" +
+                                            "<input class='form-control ms-3 ImgUrl' id='BodyImage' type='file' name='ImgUrl' placeholder='Example : Volt' id='BodyImage'>" +
+                                            "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                                        "</div>" +
+                                    "</div>" +
+                                    "<div class='mb-3'>" +
+                                        "<label for='Answer'><strong>Answer Body :</strong></label>" +
+                                        "<div class='input-group py-3'>" +
+                                            "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer' checked />" +
+                                            "<input class='form-control answer' id='Answer' type='text' placeholder='Example : Volt'>" +
+                                            "<input class='form-control ms-2 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
+                                            "<button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>" +
+                                            "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                                        "</div>" +
+                                    "</div>" +
+                                    "<div class='mb-3 ans'>" +
+                                    "</div>" +
+                                "</div>" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>" +
+                "</div>" +
             "</div>"
         );
 
@@ -322,35 +336,37 @@
     });
 
     $(document).on("click", ".an", function () {
+        var radioName = $(this).closest('.input-group').find('input[type="radio"]').attr('name');
         var newAns = $(
             "<div class='d-flex align-items-center justify-content-evenly py-2 input-group'>" +
-            "<input type='radio' name='ans" + counter + "' class='me-3 correct-answer'/>" +
-            "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
-            "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss'>" +
-            "<button class='btn btn-danger ms-4 rounded-pill removeRow' data-repeater-delete>" +
-            "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
-            "</button>" +
-            "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                "<input type='radio' name='" + radioName + "' class='me-3 correct-answer'/>" +
+                "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+                "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss'>" +
+                "<button class='btn btn-danger ms-4 rounded-pill removeRow' data-repeater-delete>" +
+                    "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                "</button>" +
+                "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
             "</div>"
         );
+        console.log("Radio button name:", radioName);
         $(this).closest(".card").find(".ans").append(newAns);
     });
 
     $(document).on("click", ".removeRow", function () {
        
-        $(this).closest(".d-flex").remove();
+        $(this).closest(".input-group").remove();
     });
 
     $(".an[data-version='main']").click(function () {
         var newAns = $(
             "<div class='d-flex align-items-center justify-content-evenly py-2 input-group'>" +
-            "<input type='radio' name='ans0' class='me-3 correct-answer'/>" +
-            "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
-            "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
-            "<button class='btn btn-danger rounded-pill ms-4 removeRow' data-repeater-delete>" +
-            "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
-            "</button>" +
-            "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                "<input type='radio' name='ans0' class='me-3 correct-answer'/>" +
+                "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+                "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
+                "<button class='btn btn-danger rounded-pill ms-4 removeRow' data-repeater-delete>" +
+                    "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                "</button>" +
+                "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
             "</div>"
         );
 
