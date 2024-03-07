@@ -142,12 +142,31 @@ namespace Cuba_Staterkit.Controllers
             return View(questions);
         }
 
-        public ActionResult DeleteQuestion(Guid id, Guid quizId)
+        [HttpPost]
+        public IActionResult DeleteQuestion([FromBody] DeleteQuestionRequest request)
+        {
+
+            try
+            {
+                Question.DeleteQuestion(request.Id);
+                return Json(new { success = true, redirectUrl = Url.Action("EditQuestions", "Question", new { id = request.QuizId }) });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                throw; 
+            }
+        }
+
+       
+        public IActionResult DeleteVersion(Guid id,Guid quizId)
         {
             Question.DeleteQuestion(id);
             return RedirectToAction("EditQuestions", "Question", new { id = quizId });
         }
 
 
-    }
+
+
+        }
 }
