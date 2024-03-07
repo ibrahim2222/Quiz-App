@@ -59,6 +59,53 @@ namespace Cuba_Staterkit.Controllers
         }
 
 
+        //[HttpPost]
+        //public ActionResult Create([FromBody] QuestionUploadVM data)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        Guid firstQuestionId = Guid.NewGuid();
+        //        for (int i = 0; i < data.questions.Count; i++)
+        //        {
+        //            StringBuilder correctAnswerStr = new StringBuilder();
+        //            List<string> correctAnswerURL = new List<string>();
+        //            foreach (var item in data.filePaths)
+        //            {                      
+        //                if (item.Key.Contains("bodyImage_") && item.Key[item.Key.Length - 1].ToString() != (i).ToString())
+        //                    break;
+        //                if (item.Key != ("bodyImage_" + i))
+        //                {
+        //                    correctAnswerURL.Add(item.Value);
+        //                    correctAnswerStr.Append(item.Value);
+        //                    correctAnswerStr.Append(",");
+        //                    data.filePaths.Remove(item.Key);
+        //                }
+        //            }
+        //            string answersUrl = correctAnswerStr.ToString().TrimEnd(',');
+        //            string? imgUrl = data.filePaths.GetValueOrDefault("bodyImage_" + i);
+        //            Console.WriteLine(imgUrl);
+        //            Question question = new Question()
+        //            {
+        //                ID = (i == 0) ? firstQuestionId : Guid.NewGuid(),
+        //                Body = data.questions[i].Body,
+        //                ImgUrl = data.filePaths.GetValueOrDefault("bodyImage_" + i),
+        //                Answers = string.Join(",", data.questions[i].Answers),
+        //                AnswersURL = answersUrl,
+        //                CorrectAnswerUrl = correctAnswerURL[data.questions[i].CorrectAnswerIndex],
+        //                CorrectAnswer = data.questions[i].CorrectAnswer,
+        //                QuestionType = Questiontype.String,
+        //                AnswerType = Questiontype.String,
+        //                QuizID = new Guid(data.questions[i].QuizID),
+        //                VersionID = firstQuestionId.ToString(), 
+        //            };
+        //            Question.InsertQuestion(question);
+        //            data.filePaths.Remove("bodyImage_" + i);
+        //        }
+        //    }
+        //    toastNotification.AddSuccessToastMessage("Questions Added Successfully");
+        //    return RedirectToAction("CreateQuiz", "Assesment");
+        //}
+
         [HttpPost]
         public ActionResult Create([FromBody] QuestionUploadVM data)
         {
@@ -69,8 +116,9 @@ namespace Cuba_Staterkit.Controllers
                 {
                     StringBuilder correctAnswerStr = new StringBuilder();
                     List<string> correctAnswerURL = new List<string>();
+                    List<string> itemsToRemove = new List<string>(); // Create a list to store items to remove
                     foreach (var item in data.filePaths)
-                    {                      
+                    {
                         if (item.Key.Contains("bodyImage_") && item.Key[item.Key.Length - 1].ToString() != (i).ToString())
                             break;
                         if (item.Key != ("bodyImage_" + i))
@@ -78,32 +126,41 @@ namespace Cuba_Staterkit.Controllers
                             correctAnswerURL.Add(item.Value);
                             correctAnswerStr.Append(item.Value);
                             correctAnswerStr.Append(",");
-                            data.filePaths.Remove(item.Key);
+                            itemsToRemove.Add(item.Key); // Add the key to the list of items to remove
                         }
                     }
-                    string answersUrl = correctAnswerStr.ToString().TrimEnd(',');
-
+                    string? answersUrl = correctAnswerStr.ToString().TrimEnd(',') == "" ? null : correctAnswerStr.ToString().TrimEnd(',');
+                    string? correctAnswerUrl = correctAnswerStr.Length <= 0 ? null : correctAnswerURL[data.questions[i].CorrectAnswerIndex];
+                    string? imgUrl = data.filePaths.GetValueOrDefault("bodyImage_" + i);
+                    
                     Question question = new Question()
                     {
                         ID = (i == 0) ? firstQuestionId : Guid.NewGuid(),
                         Body = data.questions[i].Body,
-                        ImgUrl = data.filePaths["bodyImage_" + i],
+                        ImgUrl = data.filePaths.GetValueOrDefault("bodyImage_" + i),
                         Answers = string.Join(",", data.questions[i].Answers),
                         AnswersURL = answersUrl,
-                        CorrectAnswerUrl = correctAnswerURL[data.questions[i].CorrectAnswerIndex],
+                        CorrectAnswerUrl = correctAnswerUrl,
                         CorrectAnswer = data.questions[i].CorrectAnswer,
                         QuestionType = Questiontype.String,
                         AnswerType = Questiontype.String,
                         QuizID = new Guid(data.questions[i].QuizID),
-                        VersionID = firstQuestionId.ToString(), 
+                        VersionID = firstQuestionId.ToString(),
                     };
                     Question.InsertQuestion(question);
-                    data.filePaths.Remove("bodyImage_" + i);
+
+                    // Remove items from data.filePaths after the loop
+                    foreach (var key in itemsToRemove)
+                    {
+                        data.filePaths.Remove(key);
+                    }
                 }
             }
             toastNotification.AddSuccessToastMessage("Questions Added Successfully");
             return RedirectToAction("CreateQuiz", "Assesment");
         }
+
+
 
         [HttpPost]
         public ActionResult CreateHomework([FromBody] List<QuestionHomeworkViewModel> questions)
@@ -135,7 +192,6 @@ namespace Cuba_Staterkit.Controllers
             return RedirectToAction("CreateHomework", "Assesment");
         }
 
-
         public ActionResult EditQuestions(string id)
         {
             var questions = Question.GetQuestionById(id).ToList();
@@ -157,16 +213,11 @@ namespace Cuba_Staterkit.Controllers
                 throw; 
             }
         }
-
        
         public IActionResult DeleteVersion(Guid id,Guid quizId)
         {
             Question.DeleteQuestion(id);
             return RedirectToAction("EditQuestions", "Question", new { id = quizId });
         }
-
-
-
-
-        }
+    }
 }
