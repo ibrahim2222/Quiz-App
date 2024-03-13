@@ -72,9 +72,10 @@
                                                 </div>
 
                                                 <div class="card-body align-items-center justify-content-center tab">
+                                                    <input type="hidden" value="@mainQuestion.VersionID" id="VersionID">
+                                                    <input type="hidden" value="@mainQuestion.ID" id="QuestionID">
                                                     <div class="widget-content">
                                                         <input type="hidden" name="quizId" value="@mainQuestion.ID" />
-                                                        @mainQuestion.ID
                                                         <div class="row">
                                                             <div class="col-lg-12">
                                                                 <div style="text-align: right !important;">
@@ -89,7 +90,7 @@
                                                                 <div class="input-group">
                                                                     <input class="form-control Question" id="Question" type="text" name="Body"
                                                                     placeholder="Example : What is the Measuring unit of Voltage ?" asp-for="@mainQuestion.Body">
-                                                                    <input class="form-control ms-3" type="file" asp-for="@mainQuestion.ImgUrl" id="BodyImage">
+                                                                    <input class="form-control ms-3 ImgUrl" type="file" asp-for="@mainQuestion.ImgUrl" id="BodyImage" src="@mainQuestion.ImgUrl">
                                                                     <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@mainQuestion.ImgUrl">
                                                                         <i class="far fa-file-image" style="font-size: 18px;"></i>
                                                                     </button>
@@ -116,7 +117,7 @@
                                                                     <div class="input-group py-2">
                                                                         <input type="radio" name="@("Radio" + RadioId)" class='me-3 correct-answer' checked="@(correctImg && correctTxt)"/>
                                                                         <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt" asp-for="@Ans">
-                                                                        <input class="form-control ms-3" type="file" asp-for="@ImageSrc" id="AnswerImage">
+                                                                        <input class="form-control ms-3 ImgUrl" type="file" asp-for="@ImageSrc" id="AnswerImage" src="@ImageSrc">
                                                                         @if (index == 0)
                                                                         {
                                                                             <button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>
@@ -158,6 +159,8 @@
                                                         <h5 class="text-white">Version : @VersionCounter</h5>
                                                     </div>
                                                     <div class="card-body align-items-center justify-content-center tab">
+                                                        <input type="hidden" value="@version.VersionID" id="VersionID">
+                                                        <input type="hidden" value="@version.ID" id="QuestionID">
                                                         <div class="widget-content">
                                                             <div style='text-align: right !important;'>
                                                                 <a class='btn btn-danger text-right rounded-pill' asp-action="DeleteVersion" asp-controller="Question" asp-route-id="@version.ID" asp-route-quizId="@version.QuizID"><strong><i class="fas fa-trash-alt"></i></strong></a>
@@ -168,7 +171,7 @@
                                                                     <div class="input-group">
                                                                         <input class="form-control Question" id="Question" type="text" name="Body"
                                                                         placeholder="Example : What is the Measuring unit of Voltage ?" asp-for="@version.Body">
-                                                                        <input class="form-control ms-3" type="file" asp-for="@version.AnswersURL" id="BodyImage">
+                                                                        <input class="form-control ms-3 ImgUrl" type="file" asp-for="@version.AnswersURL" id="BodyImage" src="@version.ImgUrl">
 
                                                                         <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@version.ImgUrl">
                                                                             <i class="far fa-file-image" style="font-size: 18px;"></i>
@@ -179,16 +182,19 @@
                                                                     <label for="Answer"><strong>Answer Body :</strong></label>
                                                                     @{
                                                                         var VersionAnswersText = version.Answers.Split(',');
-                                                                        var VersionAnswersAnswerImages = version.AnswersURL.Split(',');
+                                                                        var VersionAnswersAnswerImages = version.AnswersURL == null ? null : version.AnswersURL.Split(',');
                                                                         var VersionRadioId = "q" + RadioCounter;
                                                                         @for (var index = 0; index < VersionAnswersText.Length; index++)
                                                                         {
-                                                                            var Ans = VersionAnswersText[index];
-                                                                            var ImageSrc = VersionAnswersAnswerImages[index];
+                                                                            string Ans = VersionAnswersText != null ? VersionAnswersText[index] : "";
+                                                                            string? ImageSrc = VersionAnswersAnswerImages != null ? VersionAnswersAnswerImages[index] : null;
+                                                                            bool correctImg = version.CorrectAnswerUrl == ImageSrc ? true : false;
+                                                                            bool correctTxt = version.CorrectAnswer == Ans ? true : false;
+
                                                                             <div class="input-group py-1">
-                                                                                <input type="radio" name="@("Radio" + VersionRadioId)" class='me-3 correct-answer' checked="@(Ans == version.CorrectAnswer)" />
+                                                                                <input type="radio" name="@("Radio" + VersionRadioId)" class='me-3 correct-answer' checked="@(correctImg && correctTxt)" />
                                                                                 <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt" asp-for="@Ans">
-                                                                                <input class="form-control ms-3" type="file" value="@AnswerImages" asp-for="@Ans" id="AnswerImage">
+                                                                                <input class="form-control ms-3 ImgUrl" type="file" value="@AnswerImages" asp-for="@Ans" id="AnswerImage" src="@ImageSrc">
                                                                                 @if (index == 0)
                                                                                 {
                                                                                     <button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>
@@ -249,28 +255,52 @@
 </div>
 
 <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Loop through all input file elements
+        document.querySelectorAll('input[type="file"]').forEach(function (input) {
+            // Check if the input has a src attribute value
+            var srcValue = input.getAttribute('src');
+            if (srcValue) {
+                var imageName = srcValue.split('\\').pop();
+                var imageFinalUrl = '@Url.Content("~/uploads/")' + imageName;
+                $(input).attr("src", imageFinalUrl);
+                console.log(imageFinalUrl);
+                console.log(input);
+                // For example, you can perform additional actions here
+            }
+        });
+    });
+
     $(document).on('click', '.viewImage', function () {
-        var imageSrc = $(this).data('image-src');
         var inputElement = $(this).closest('.input-group').find('.ImgUrl')[0];
 
-        if (imageSrc) {
-            var imageName = imageSrc.split('\\').pop();
-            var imageFinalUrl = '@Url.Content("~/uploads/")' + imageName;
-            $("#selectedImagePreview").attr("src", imageFinalUrl);
-            $("#imagePreviewModal").modal("show");
-        } else if (inputElement && inputElement.files && inputElement.files[0]) {
+        // Check if the input element has a file selected
+        if (inputElement.files && inputElement.files[0]) {
             var reader = new FileReader();
             reader.onload = function (e) {
                 $("#selectedImagePreview").attr("src", e.target.result);
                 $("#imagePreviewModal").modal("show");
             };
             reader.readAsDataURL(inputElement.files[0]);
-        } else {
-            Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: "You must upload a picture",
-            });
+        }
+        else {
+            var imageSrc = $(this).data('image-src');
+
+            // Check if there's a data-src attribute provided
+            if (imageSrc) {
+                var imageName = imageSrc.split('\\').pop();
+                var imageFinalUrl = '@Url.Content("~/uploads/")' + imageName;
+                $("#selectedImagePreview").attr("src", imageFinalUrl);
+                $("#imagePreviewModal").modal("show");
+            }
+            else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "You must upload a picture",
+                });
+            }
         }
     });
 
@@ -376,10 +406,7 @@
     $(document).on("click", ".removeRow", function () {
         $(this).closest(".d-flex").remove();
     });
-
-
-   
-
+       
     $("#question-tabs-content").on("click", ".removeVersion", function () {
         var versionToRemove = $(this).data("version");
         $("#version" + versionToRemove).remove();
@@ -388,13 +415,7 @@
 
     var QuizId = @Html.Raw(Json.Serialize(Model.FirstOrDefault().QuizID));
 
-
-
-
     $(document).on("click", ".removeMainQuestion", function () {
-
-
-
         Swal.fire({
             title: "Are you sure?",
             text: "You won't be able to revert this!",
@@ -422,16 +443,9 @@
                         console.error('Error sending data to server:', error);
                     }
                 });
-
-
             }
         });
-
-
-
     });
-
-
 
     $("#submit").click(function (e) {
         e.preventDefault();
@@ -458,7 +472,9 @@
                 var tabNumber = 0;
                 $(".tab").each(function () {
                     var fileInput = $(this).find("#BodyImage")[0];
+                    console.log(fileInput);
                     var file = fileInput.files[0];
+                    console.log(file);
                     formData.append('bodyImage_' + tabNumber, file);
 
                     var j = 0;
@@ -480,12 +496,13 @@
                     }
 
                     var questionData = {
+                        QuestionID: $(this).find("#QuestionID").val(),
                         Body: $(this).find(".Question").val(),
                         Answers: [],
                         CorrectAnswer: "",
                         CorrectAnswerIndex: correctAnswerIndex,
                         QuizID: QuizId.toString(),
-                        VersionID: ""
+                        VersionID: $(this).find("#VersionID").val()
                     };
 
                     $(this).find(".answer").each(function () {
@@ -493,47 +510,41 @@
                     });
 
                     questionData.CorrectAnswer = $(this).find('.correct-answer:checked').closest('.input-group').find('.answer').val();
-                    questionData.VersionID = $("#VersionID").val();
                     questionsJson.push(questionData);
                     tabNumber++;
 
-
                 });
 
-                //for (let pair of formData) {
-                //    console.log(pair[0] + ', ' + pair[1]);
-                //}
+                for (let pair of formData) {
+                    console.log(pair[0] + ', ' + pair[1]);
+                }
 
+                console.log(questionsJson);
 
-                //console.log(questionsJson);
-
-
-
-
-                //$.ajax({
-                //    url: '/Question/UploadFiles',
-                //    type: 'POST',
-                //    data: formData,
-                //    contentType: false,
-                //    processData: false,
-                //    success: function (fileResponse) {
-                //        $.ajax({
-                //            url: '/Question/Create',
-                //            type: 'POST',
-                //            contentType: 'application/json',
-                //            data: JSON.stringify({ questions: questionsJson, filePaths: fileResponse }),
-                //            success: function (response) {
-                //                location.reload();
-                //            },
-                //            error: function (xhr, status, error) {
-                //                console.error('Error sending data to server:', error);
-                //            }
-                //        });
-                //    },
-                //    error: function (xhr, status, error) {
-                //        console.error('Error uploading files:', error);
-                //    }
-                //});
+                $.ajax({
+                    url: '/Question/UploadFiles',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (fileResponse) {
+                        $.ajax({
+                            url: '/Question/Create',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ questions: questionsJson, filePaths: fileResponse }),
+                            success: function (response) {
+                                location.reload();
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error sending data to server:', error);
+                            }
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error uploading files:', error);
+                    }
+                });
 
             } else if (result.isDenied) {
                 swal.fire({
@@ -591,30 +602,30 @@
 
                         console.log(questionsJson);
 
-                        //$.ajax({
-                        //    url: '/Question/UploadFiles',
-                        //    type: 'POST',
-                        //    data: formData,
-                        //    contentType: false,
-                        //    processData: false,
-                        //    success: function (fileResponse) {
-                        //        $.ajax({
-                        //            url: '/Question/Create',
-                        //            type: 'POST',
-                        //            contentType: 'application/json',
-                        //            data: JSON.stringify({ questions: questionsJson, filePaths: fileResponse }),
-                        //            success: function (response) {
-                        //                location.reload();
-                        //            },
-                        //            error: function (xhr, status, error) {
-                        //                console.error('Error sending data to server:', error);
-                        //            }
-                        //        });
-                        //    },
-                        //    error: function (xhr, status, error) {
-                        //        console.error('Error uploading files:', error);
-                        //    }
-                        //});
+                        $.ajax({
+                            url: '/Question/UploadFiles',
+                            type: 'POST',
+                            data: formData,
+                            contentType: false,
+                            processData: false,
+                            success: function (fileResponse) {
+                                $.ajax({
+                                    url: '/Question/Create',
+                                    type: 'POST',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify({ questions: questionsJson, filePaths: fileResponse }),
+                                    success: function (response) {
+                                        location.reload();
+                                    },
+                                    error: function (xhr, status, error) {
+                                        console.error('Error sending data to server:', error);
+                                    }
+                                });
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error uploading files:', error);
+                            }
+                        });
 
                     } else if (result.isDenied) {
                         location.reload();
