@@ -64,6 +64,7 @@
                             {
                                 @foreach (var mainQuestion in Model.Where(q => q.ID.ToString() == q.VersionID))
                                 {
+
                                     <div class="tab-pane @(MainQuestionCounter == 1 ? "fade show active" : "fade")" id="question-@mainQuestion.ID" role="tabpanel" aria-labelledby="question-tab-@mainQuestion.ID">
                                         <div class="col-sm-12 col-xl-12 mt-5" style="top: -46px;">
                                             <div class="card card-absolute border border-secondary" style="margin-top:8%;">
@@ -82,19 +83,46 @@
                                                                     <button class="btn btn-danger text-right rounded-pill removeMainQuestion" data-question-id="@mainQuestion.ID"><strong><i class="fas fa-trash-alt"></i></strong></button>
                                                                 </div>
                                                             </div>
+                                                            <script>
+                                                                $(document).on("click", ".an", function () {
+                                                                    if ($(this).data('handled')) {
+                                                                        $(this).data('handled', false);
+                                                                        return;
+                                                                    }
 
+                                                                    var questionId = '@mainQuestion.ID';
+                                                                    var radioName = $(this).closest('.input-group').find('input[type="radio"]').attr('name');
+                                                                    var newAns = $(
+                                                                        "<div class='d-flex align-items-center justify-content-evenly py-2 input-group'>" +
+                                                                        "<input type='radio' name='" + radioName + "' class='me-3 correct-answer'/>" +
+                                                                        "<input type='text' class='form-control text-center text-black answer' placeholder='Answer' data-question-id='" + questionId + "'>" +
+                                                                        "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss'>" +
+                                                                        "<button class='btn btn-danger ms-4 rounded-pill removeRow' data-repeater-delete>" +
+                                                                        "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
+                                                                        "</button>" +
+                                                                        "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
+                                                                        "</div>"
+                                                                    );
+                                                                    console.log("Radio button name:", radioName);
+                                                                    $(this).closest(".card").find(".ans").append(newAns);
+
+                                                                    $(this).data('handled', true);
+                                                                });
+                                                            </script>
 
                                                             <div class="mb-3">
                                                                 <label for="Question"><strong>Question Body :</strong></label>
                                                                 <div class="input-group">
                                                                     <input class="form-control Question" id="Question" type="text" name="Body"
-                                                                    placeholder="Example : What is the Measuring unit of Voltage ?" asp-for="@mainQuestion.Body">
-                                                                    <input class="form-control ms-3" type="file" asp-for="@mainQuestion.ImgUrl" id="BodyImage">
-                                                                    <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@mainQuestion.ImgUrl">
+                                                                    placeholder="Example : What is the Measuring unit of Voltage ?" asp-for="@mainQuestion.Body" data-question-id="@mainQuestion.ID">
+
+                                                                    <input class="form-control ms-3 BodyImage" type="file" asp-for="@mainQuestion.ImgUrl" id="BodyImage" data-question-id="@mainQuestion.ID">
+
+                                                                    <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" value="@mainQuestion.ImgUrl" data-image-src="@mainQuestion.ImgUrl" data-question-id="@mainQuestion.ID">
                                                                         <i class="far fa-file-image" style="font-size: 18px;"></i>
                                                                     </button>
 
-
+                                                                   
                                                                 </div>
                                                             </div>
                                                             <div class="mb-3">
@@ -115,8 +143,8 @@
 
                                                                     <div class="input-group py-2">
                                                                         <input type="radio" name="@("Radio" + RadioId)" class='me-3 correct-answer' checked="@(correctImg && correctTxt)"/>
-                                                                        <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt" asp-for="@Ans">
-                                                                        <input class="form-control ms-3" type="file" asp-for="@ImageSrc" id="AnswerImage">
+                                                                        <input class="form-control answer" id="Answer" type="text" name="" placeholder="Example: Volt" asp-for="@Ans" data-question-id="@mainQuestion.ID">
+                                                                        <input class="form-control ms-3" type="file" asp-for="@ImageSrc" id="AnswerImage" data-question-id="@mainQuestion.ID">
                                                                         @if (index == 0)
                                                                         {
                                                                             <button class='btn btn-success rounded-pill ms-4 an' type='button'><i class='fas fa-plus-circle'></i></button>
@@ -127,7 +155,7 @@
                                                                                 <span class='align-middle'><i class='fas fa-backspace'></i></span>
                                                                             </button>
                                                                         }
-                                                                        <button class="btn btn-secondary ms-2 rounded-pill viewImage" type="button" data-image-src="@ImageSrc">
+                                                                        <button class="btn btn-secondary ms-2 rounded-pill viewImage viewImageAns" value="@ImageSrc" type="button" data-image-src="@ImageSrc" data-question-id="@mainQuestion.ID">
                                                                             <i class="far fa-file-image" style="font-size: 18px;"></i>
                                                                         </button>
                                                                     </div>
@@ -249,6 +277,39 @@
 </div>
 
 <script>
+
+    var EditedQuestions = [];
+
+    $(document).off('blur', '.Question, .BodyImage').on('blur', '.Question, .BodyImage', function () {
+        var questionId = $(this).data('question-id');
+
+        var editedQuestion = {
+            QuestionId: questionId,
+            QuestionBodyValue: $('.Question[data-question-id="' + questionId + '"]').val(),
+            BodyImageValue: $('.viewImage[data-question-id="' + questionId + '"]').val(),
+            Answers: []
+        };
+
+        var answers = $(".answer[data-question-id='" + questionId + "']");
+        var imageInputs = $(".viewImageAns[data-question-id='" + questionId + "']");
+
+        answers.each(function (index) {
+            var answerTextValue = $(this).val();
+            var answerImgValue = $(imageInputs[index]).val();
+
+            editedQuestion.Answers.push({
+                AnswerTextValue: answerTextValue,
+                AnswerImgValue: answerImgValue
+            });
+        });
+
+
+
+        EditedQuestions.push(editedQuestion);
+
+        console.log(EditedQuestions);
+    });
+
     $(document).on('click', '.viewImage', function () {
         var imageSrc = $(this).data('image-src');
         var inputElement = $(this).closest('.input-group').find('.ImgUrl')[0];
@@ -278,7 +339,6 @@
 
     var activeTab = $(".tab-content .tab-pane.active");
 
-    //console.log("Appending to tab:", activeTab.attr("id"));
 
     $("#versions").on("click", ".removeVersion", function () {
        
@@ -335,22 +395,7 @@
         versionCounter++;
     });
 
-    $(document).on("click", ".an", function () {
-        var radioName = $(this).closest('.input-group').find('input[type="radio"]').attr('name');
-        var newAns = $(
-            "<div class='d-flex align-items-center justify-content-evenly py-2 input-group'>" +
-                "<input type='radio' name='" + radioName + "' class='me-3 correct-answer'/>" +
-                "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
-                "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss'>" +
-                "<button class='btn btn-danger ms-4 rounded-pill removeRow' data-repeater-delete>" +
-                    "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
-                "</button>" +
-                "<button class='btn btn-secondary ms-2 rounded-pill viewImage' type='button'><i class='far fa-file-image' style='font-size:18px;'></i></button>" +
-            "</div>"
-        );
-        console.log("Radio button name:", radioName);
-        $(this).closest(".card").find(".ans").append(newAns);
-    });
+
 
     $(document).on("click", ".removeRow", function () {
        
@@ -361,7 +406,7 @@
         var newAns = $(
             "<div class='d-flex align-items-center justify-content-evenly py-2 input-group'>" +
                 "<input type='radio' name='ans0' class='me-3 correct-answer'/>" +
-                "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
+            "<input type='text' class='form-control text-center text-black answer' placeholder='Answer'>" +
                 "<input class='form-control ms-3 ImgUrl ImgUrlAns' id='Answer' type='file' placeholder='Example : Volt'>" +
                 "<button class='btn btn-danger rounded-pill ms-4 removeRow' data-repeater-delete>" +
                     "<span class='align-middle'><i class='fas fa-backspace'></i></span>" +
@@ -427,11 +472,7 @@
             }
         });
 
-
-
     });
-
-
 
     $("#submit").click(function (e) {
         e.preventDefault();
@@ -623,4 +664,25 @@
             }
         });
     });
+
+
+
+
+    $(document).ready(function () {
+        // Assuming each Question input has a unique ID based on mainQuestion.ID
+        $("#Question-mainQuestion.ID").on("input", function () {
+            alert();
+            // This function will be called when the input changes
+            var changedValue = $(this).val();
+            console.log("Question Body changed to: " + changedValue);
+
+            // Perform any action you want with the changed value
+        });
+    });
+
+
+
+
+
+
 </script>
