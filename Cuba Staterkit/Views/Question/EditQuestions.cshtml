@@ -6,7 +6,7 @@
     var VersionCounter = 0;
     var RadioCounter = 0;
 }
-
+<link rel="stylesheet" href="~/assets/css/imageStyles.css">
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <div class="page-body">
@@ -85,7 +85,7 @@
                                                             </div>
 
 
-                                                            <div class="mb-3">
+                                                            @*<div class="mb-3">
                                                                 <label for="Question"><strong>Question Body :</strong></label>
                                                                 <div class="input-group">
                                                                     <input class="form-control Question" id="Question" type="text" name="Body"
@@ -96,6 +96,21 @@
                                                                     </button>
 
 
+                                                                </div>
+                                                            </div>*@
+
+                                                            <div class="mb-3">
+                                                                <label for="Question"><strong>Question Body :</strong></label>
+                                                                <div class="input-group">
+                                                                    <textarea class="Question" id="Question" name="Body" rows="3" cols="75"
+                                                                              style="resize: none; font-size: 16px; padding: 8px;">@mainQuestion.Body</textarea>
+                                                                    <div id="imgBox">
+                                                                        <img class="ImgUrl" src="@mainQuestion.ImgUrl" alt="" id="imgUploaded">  @*add image url*@
+                                                                        <input type="file" accept="image/*" name="image" id="file" style="display: none;" onchange="loadFile(event)">
+                                                                        <label for="file">
+                                                                            <img src="~/assets/images/upload.png" class="upload-icon" alt="upload image">
+                                                                        </label>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div class="mb-3">
@@ -634,4 +649,20 @@
             }
         });
     });
+</script>
+
+@*script to add image when uploaded*@
+<script>
+    var loadFile = function (event) {
+        var file = event.target.files[0];
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            var img = document.getElementById("imgUploaded");
+            img.src = e.target.result;
+            img.style.visibility = 'visible';
+        };
+
+        reader.readAsDataURL(file);
+    }
 </script>
