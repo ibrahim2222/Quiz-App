@@ -20,14 +20,14 @@ namespace Cuba_Staterkit.RepoServices
         {
             throw new NotImplementedException();
         }
-        public bool SessionExists(int Id)
+        public bool SessionExists(int Id, string GradeLvl)
         {
-            Session? session = GetSessionByNumber(Id);
+            Session? session = GetSessionByNumber(Id,GradeLvl);
             return session != null ? true : false;
         }
-        public Session GetSessionByNumber(int Id)
+        public Session GetSessionByNumber(int Id,string GradeLvl)
         {
-            Session? session = Context.Sessions.FirstOrDefault(s => s.SessionNumber == Id);
+            Session? session = Context.Sessions.FirstOrDefault(s => s.SessionNumber == Id && s.GradeLvl == GradeLvl);
             return session;
         }
         public Session? GetSessionByName(string name)
@@ -82,9 +82,9 @@ namespace Cuba_Staterkit.RepoServices
 
         }
 
-        public int GetLastSessionNumber()
+        public int GetLastSessionNumber(string GradeNum)
         {
-            var lastSession = Context.Sessions.OrderByDescending(s => s.SessionNumber).FirstOrDefault();
+            var lastSession = Context.Sessions.Where(G=>G.GradeLvl == GradeNum).OrderByDescending(s => s.SessionNumber).FirstOrDefault();
 
             if (lastSession != null)
             {
@@ -96,6 +96,18 @@ namespace Cuba_Staterkit.RepoServices
                 return 0;
             }
         }
+
+
+        public void ChangeSessionName(int SessionName, string SessionId)
+        {
+            Session? session = Context.Sessions.FirstOrDefault(q => q.ID == new Guid(SessionId));
+            if (session != null)
+            {
+                session.SessionNumber = SessionName;
+                Context.SaveChanges();
+            }
+        }
+
 
     }
 }

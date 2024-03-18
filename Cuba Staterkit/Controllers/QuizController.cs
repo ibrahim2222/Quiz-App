@@ -26,14 +26,16 @@ namespace Cuba_Staterkit.Controllers
         public IActionResult AllQuizes()
         {
             List<Quiz> Quizes = Quiz.GetAll();
-            ViewBag.lastSessionNumber = _session.GetLastSessionNumber();
+            string GradeNum = HttpContext.Request.Query["Grade"];
+            ViewBag.Grade = GradeNum;
+            ViewBag.lastSessionNumber = _session.GetLastSessionNumber(GradeNum);
             return View(Quizes);
         }
 
         [HttpPost]
         public IActionResult CreateQuiz(ClassSessionVm classSession)
         {
-            bool sessionExists = _session.SessionExists(classSession.SessionNumber);
+            bool sessionExists = _session.SessionExists(classSession.SessionNumber,classSession.GradeLevel);
 
             if (sessionExists)
             {
@@ -42,10 +44,10 @@ namespace Cuba_Staterkit.Controllers
             }
             else
             {
-                Session session = new Session() { ID = Guid.NewGuid(), Name = "Default", SessionNumber = classSession.SessionNumber };
+                Session session = new Session() { ID = Guid.NewGuid(), Name = "Default", SessionNumber = classSession.SessionNumber,GradeLvl= classSession.GradeLevel };
                 _session.InsertSession(session);
 
-                Quiz quiz = new Quiz() { Id = Guid.NewGuid(), Name = classSession.QuizName, SessionID = session.ID };
+                Quiz quiz = new Quiz() { Id = Guid.NewGuid(), Name = classSession.QuizName, SessionID = session.ID, GradeLvl = classSession.GradeLevel };
                 Quiz.InsertQuiz(quiz);
 
                 //Response.Cookies.Append("quizId", quiz.Id.ToString(), new CookieOptions

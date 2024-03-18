@@ -1,7 +1,11 @@
 ﻿@model IEnumerable<Cuba_Staterkit.Models.Quiz>
+
 @{
     int lastSessionNumber = ViewBag.lastSessionNumber + 1;
+    string V = ViewBag.Grade;
+    
 }
+
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <div class="page-body">   
@@ -17,27 +21,36 @@
                 </div>
             </div>
         </div>
-
+        <div class="card mb-5 w-50 mx-auto d-flex justify-content-center align-items-center border border-secondary rounded-pill">
+            <div class="row g-0 text-center">
+                <h2 class="mb-0"><img width="65" height="65" src="https://img.icons8.com/dusk/65/test-failed.png" alt="test-failed" class="mt-2 mb-2"/> Quizes</h2>
+            </div>
+        </div>
         <div class="row mt-3">
             <div class="col-sm-12 col-xl-12">
                 <div class="card-body align-items-center justify-content-center text-center">
                     <div class="widget-content">
-
                         <div class="row">
                             @if (Model.Any())
                             {
-                                @foreach (var Quiz in Model.OrderBy(S => S.Session.SessionNumber))
+                                @foreach (var Quiz in Model.OrderBy(S => S.Session.SessionNumber).Where(G=>G.GradeLvl == V ))
                                 {
+
                                     <div class="col-sm-12 col-xl-4">
                                         <div class="card card-absolute widget-hover border border-secondary" style="transition: 1s;">
                                             <div class="card-header bg-primary" style="top: -36px;">
-                                                <h5 class="text-white" style="font-size:20px;"><span>Session : </span>@Quiz.Session.SessionNumber </h5>
+                                                <input type="hidden" value="@Quiz.SessionID" id="SessIonId">
+
+                                                <h5 class="text-white" style="font-size:20px;">
+                                                    Session: <span class="sessionName badge rounded-pill" contenteditable style="min-width: 50px; display: inline-block; background-color:white; color:black;" data-placeholder="&nbsp;">@Quiz.Session.SessionNumber</span>
+                                                </h5>
                                             </div>
                                             <div class="card-body align-items-center justify-content-center text-center">
                                                 <div class="widget-content">
                                                     <div class="">
                                                         <h5>
-                                                            <i class="fas fa-signature"></i> Quiz : <span class="quizName badge rounded-pill badge-light-warning" contenteditable>@Quiz.Name</span>
+                                                            <i class="fas fa-signature"></i> Name : <span class="quizName badge rounded-pill badge-light-warning" contenteditable style="min-width: 50px; display: inline-block;" data-placeholder="&nbsp;">@Quiz.Name</span>
+
                                                         </h5>
                                                         <input type="hidden" value="@Quiz.Id" id="quizId">
                                                     </div>
@@ -93,7 +106,7 @@
                 <div class="row g-2">
                     <div class="col mb-2">
                         <label for="emailBackdrop" class="form-label"><i class="fas fa-sort-numeric-up-alt"></i> <strong>Session Number</strong></label>
-                        <input type="number" id="emailBackdrop" name="SessionNumber" class="form-control rounded-pill" placeholder="Example: 1" data-input-name="SessionNumber" value="@lastSessionNumber" disabled>
+                        <input type="number" id="emailBackdrop" name="SessionNumber" class="form-control rounded-pill" placeholder="Example: 1" data-input-name="SessionNumber" value="@lastSessionNumber">
                     </div>
                 </div>
 
@@ -155,6 +168,7 @@
         var formData = {
             SessionNumber: $("#emailBackdrop").val(),
             QuizName: $("#dobBackdrop").val(),
+            GradeLevel: '@V'
         };
         //console.log(formData);
          $.ajax({
@@ -187,12 +201,23 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var quizNameElements = document.getElementsByClassName("quizName");
+        var SessionNameElements = document.getElementsByClassName("sessionName");
+
         for (var i = 0; i < quizNameElements.length; i++) {
             quizNameElements[i].addEventListener("blur", function () {
                 var quizId = this.parentElement.parentElement.querySelector("#quizId").value;
                 yourFunctionName(this.innerText, quizId);
             });
         }
+
+        for (var i = 0; i < SessionNameElements.length; i++) {
+            SessionNameElements[i].addEventListener("blur", function () {
+                var SessionId = this.parentElement.parentElement.querySelector("#SessIonId").value;
+                yourFunctionName2(this.innerText, SessionId);
+                console.log(SessionId);
+            });
+        }
+
     });
 
     function yourFunctionName(newValue, quizId) {
@@ -215,5 +240,29 @@
                 console.error('Error sending data to server:', error);
             }
         });
+
     }
+
+    function yourFunctionName2(newValue, quizId) {
+        
+        var request = {
+            SessionNumber: newValue,
+            SessionId: quizId,
+            GradeLevel:@V
+        };
+        $.ajax({
+            url: '/Session/EditSessionName',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(request),
+            success: function (response) {
+                location.reload();
+            },
+            error: function (xhr, status, error) {
+                console.error('Error sending data to server:', error);
+            }
+        });
+
+    }
+
 </script>

@@ -12,6 +12,10 @@ namespace Cuba_Staterkit.Controllers
             return View();
         }
 
+        public IActionResult GradeLevelForm()
+        {
+            return View();
+        }
         public IActionResult CreateQuiz(Guid id)
         {
             // Read the value of the cookie

@@ -14,6 +14,7 @@ namespace Cuba_Staterkit.Models
         public string HomeworkName { get; set; }
         public string SessionName { get; set;}
         public int SessionNumber { get; set;}
+        public string GradeLevel { get; set; }
         public Quiz Quiz { get; set;}
         public HomeWork HomeWork { get; set;}
         public Session Session { get; set;}

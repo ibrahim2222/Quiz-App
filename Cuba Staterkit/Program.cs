@@ -9,6 +9,9 @@ using NToastNotify;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<Context>(options =>
@@ -48,7 +51,6 @@ builder.Services.AddScoped<IClassSession, SessionRepoService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

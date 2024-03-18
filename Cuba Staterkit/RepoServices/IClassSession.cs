@@ -7,11 +7,14 @@ namespace Cuba_Staterkit.RepoServices
         public List<Session> GetAll();
         public Session GetSessionById(int id);
         public Session GetSessionByName(string name);
-        public Session GetSessionByNumber(int Id);
-        public int GetLastSessionNumber();
-        public bool SessionExists(int Id);
+        public Session GetSessionByNumber(int Id, string GradeLvl);
+        public int GetLastSessionNumber(string GradeNum);
+        public bool SessionExists(int Id, string GradeLvl);
         public void InsertSession(Session session);
         public void UpdateSession(int id, Session session);
         public void DeleteSession(Guid id);
+
+        public void ChangeSessionName(int SessionName, string SessionId);
+
     }
 }

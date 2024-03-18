@@ -9,6 +9,9 @@ namespace Cuba_Staterkit.Models
         public Guid Id { get; set; }
         [Required]
         public string Name { get; set; }
+
+        public string GradeLvl { get; set; }
+
         [ForeignKey(nameof(Session))]
         public Guid? SessionID { get; set; }
         public virtual Session? Session { get; set; }
