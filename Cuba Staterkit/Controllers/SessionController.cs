@@ -21,12 +21,13 @@ namespace Cuba_Staterkit.Controllers
         public IActionResult EditSessionName([FromBody] SessionVM sessionInfo)
         {
             bool exist = Session.SessionExists(sessionInfo.SessionNumber,sessionInfo.GradeLevel);
+
             if(exist)
             {
-                return Json(new { success = false }); // Return JSON response
+                return Json(new { success = false }); 
             }
             Session.ChangeSessionName(sessionInfo.SessionNumber, sessionInfo.SessionId);
-            return Json(new { success = true }); // Return JSON response
+            return Json(new { success = true }); 
         }
 
     }

@@ -214,7 +214,7 @@
             SessionNameElements[i].addEventListener("blur", function () {
                 var SessionId = this.parentElement.parentElement.querySelector("#SessIonId").value;
                 yourFunctionName2(this.innerText, SessionId);
-                console.log(SessionId);
+                //console.log(SessionId);
             });
         }
 
@@ -227,7 +227,7 @@
             QuizName: newValue,
             QuizId: quizId
         };
-        console.log(request);
+        //console.log(request);
         $.ajax({
             url: '/Quiz/EditQuizName',
             type: 'POST',
@@ -245,21 +245,38 @@
 
     function yourFunctionName2(newValue, quizId) {
         
-        var request = {
-            SessionNumber: newValue,
+        var request2 = {
+            SessionNumber: Number(newValue),
             SessionId: quizId,
-            GradeLevel:@V
+            GradeLevel:String(@V)
         };
+        //console.log(JSON.stringify(request2));
         $.ajax({
             url: '/Session/EditSessionName',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(request),
+            data: JSON.stringify(request2),
             success: function (response) {
-                location.reload();
+                if (response.success){
+                    location.reload();
+                }
+                else{
+                    console.log("ss");
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Session Number Already Exist",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload();
+                        }
+                    });
+                            
+                }
             },
             error: function (xhr, status, error) {
-                console.error('Error sending data to server:', error);
+               
+
             }
         });
 
